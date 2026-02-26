@@ -18,7 +18,7 @@ public class DeliveryAgentController {
         this.deliveryService = deliveryService;
     }
 
-    public void start(Scanner scan, User user) {
+    public void start(User user) {
         DeliveryAgent agent = (DeliveryAgent) user;
         while (true) {
             System.out.println("\n=== DELIVERY AGENT DASHBOARD ===");

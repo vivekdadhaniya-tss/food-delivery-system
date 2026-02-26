@@ -24,7 +24,7 @@ public class AdminController {
         this.paymentService = paymentService;
     }
 
-    public void start(Scanner scan, User user) {
+    public void start(User user) {
         while (true) {
             System.out.println("\n=== ADMIN DASHBOARD ===");
             System.out.println("--- Restaurant & Menu ---");

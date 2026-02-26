@@ -26,7 +26,7 @@ public class CustomerController {
         this.deliveryService = deliveryService;
     }
 
-    public void start(Scanner scan, User user) {
+    public void start(User user) {
         Customer customer = (Customer) user;
         while (true) {
             System.out.println("\n=== CUSTOMER DASHBOARD ===");
@@ -119,7 +119,6 @@ public class CustomerController {
         // Auto-assign order to a delivery agent
         Optional<DeliveryAgent> agentOpt = deliveryService.assignOrder(order);
         if (agentOpt.isPresent()) {
-            orderService.assignDeliveryAgent(order.getOrderNumber(), agentOpt.get());
             System.out.println("Order assigned to Delivery Agent: " + agentOpt.get().getName());
         } else {
             System.out.println("No delivery agents available right now. Order will be assigned later.");

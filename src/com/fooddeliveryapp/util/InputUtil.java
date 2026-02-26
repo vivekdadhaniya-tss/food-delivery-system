@@ -1,20 +1,56 @@
 package com.fooddeliveryapp.util;
 
+import java.io.File;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
 public class InputUtil {
 
-    private static final Scanner scan = new Scanner(System.in);
+    private static Scanner scan;
+    private static boolean readingFromFile = false;
+
+    static {
+        try {
+            File file = new File("input.txt");
+            if (file.exists()) {
+                scan = new Scanner(file);
+                readingFromFile = true;
+                System.out.println("--- Reading inputs from input.txt ---");
+            } else {
+                scan = new Scanner(System.in);
+            }
+        } catch (Exception e) {
+            scan = new Scanner(System.in);
+        }
+    }
 
     private InputUtil() {}
+
+    // Safer method to switch scanners
+    private static String getNextLine() {
+        if (readingFromFile) {
+            if (scan.hasNextLine()) {
+                String line = scan.nextLine();
+                System.out.println(line);
+                return line;
+            } else {
+                // File is empty, switch to console
+                System.out.println("\n--- Finished reading from input.txt. Switching to manual input. ---");
+                scan.close();
+                scan = new Scanner(System.in);
+                readingFromFile = false;
+            }
+        }
+        // Read from console
+        return scan.nextLine();
+    }
 
     public static int getInt(String prompt) {
         int value;
         while (true) {
             System.out.print(prompt);
             try {
-                value = Integer.parseInt(scan.nextLine());  // prevention: immediately reads the leftover newline (not used scan.nextInt())
+                value = Integer.parseInt(getNextLine());
                 break;
             } catch (NumberFormatException e) {
                 System.out.println("Invalid integer. Please try again.");
@@ -28,7 +64,7 @@ public class InputUtil {
         while (true) {
             System.out.print(prompt);
             try {
-                value = Double.parseDouble(scan.nextLine());
+                value = Double.parseDouble(getNextLine());
                 break;
             } catch (NumberFormatException e) {
                 System.out.println("Invalid number. Please try again.");
@@ -41,10 +77,10 @@ public class InputUtil {
         String value;
         while (true) {
             System.out.print(prompt);
-            value = scan.nextLine().trim();
+            value = getNextLine().trim();
             if (!value.isEmpty()) {
                 break;
-            }  else {
+            } else {
                 System.out.println("Input cannot be empty. Please try again.");
             }
         }
@@ -55,10 +91,10 @@ public class InputUtil {
         String value;
         while (true) {
             System.out.print(prompt);
-            value = scan.nextLine().trim();
-            if (Pattern.matches(regex, value)) {
+            value = getNextLine().trim();
+            if (java.util.regex.Pattern.matches(regex, value)) {
                 break;
-            } else  {
+            } else {
                 System.out.println(errorMsg);
             }
         }
@@ -69,7 +105,7 @@ public class InputUtil {
         int choice;
         while (true) {
             choice = getInt(prompt);
-            if (choice >= min || choice <= max) break;
+            if (choice >= min && choice <= max) break;
             System.out.println("Choice must be between " + min + " and " + max);
         }
         return choice;
