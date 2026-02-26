@@ -1,5 +1,6 @@
 package com.fooddeliveryapp.service.Impl;
 
+import com.fooddeliveryapp.exception.UserAlreadyExistsException;
 import com.fooddeliveryapp.model.DeliveryAgent;
 import com.fooddeliveryapp.model.User;
 import com.fooddeliveryapp.model.type.Role;
@@ -26,7 +27,7 @@ public class UserServiceImpl implements UserService {
             boolean adminExists = userRepository.findAll().stream()
                     .anyMatch(u -> u.getRole() == Role.ADMIN);
             if(adminExists) {
-                throw new IllegalStateException("Admin already exists!");
+                throw new UserAlreadyExistsException("Admin already exists!");
             }
         }
         return userRepository.save(user);

@@ -1,5 +1,7 @@
 package com.fooddeliveryapp.model;
 
+import com.fooddeliveryapp.exception.CartOperationException;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -88,22 +90,14 @@ public class Cart {
 
     // validations
     private void validateRestaurant(Restaurant newRestaurant) {
-
-        if (restaurant == null) {
-            restaurant = newRestaurant;
-            return;
-        }
-
-        if (restaurant.getId() != newRestaurant.getId()) {
-            throw new IllegalStateException(
-                    "Cart can contain items from only one restaurant"
-            );
+        if (restaurant != null && restaurant.getId() != newRestaurant.getId()) {
+            throw new CartOperationException("Cart can contain items from only one restaurant. Please clear your cart first.");
         }
     }
 
     private void validateQuantity(int quantity) {
         if (quantity <= 0) {
-            throw new IllegalArgumentException(
+            throw new CartOperationException(
                     "Quantity must be greater than zero"
             );
         }

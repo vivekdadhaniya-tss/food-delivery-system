@@ -1,5 +1,7 @@
 package com.fooddeliveryapp.service.Impl;
 
+import com.fooddeliveryapp.exception.OrderProcessingException;
+import com.fooddeliveryapp.exception.ResourceNotFoundException;
 import com.fooddeliveryapp.model.*;
 import com.fooddeliveryapp.model.type.OrderStatus;
 import com.fooddeliveryapp.repository.DeliveryAgentRepository;
@@ -89,10 +91,10 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public void assignDeliveryAgent(String orderNumber, DeliveryAgent agent) {
         Order order = orderRepository.findByOrderNumber(orderNumber)
-                .orElseThrow(() -> new NoSuchElementException("Order not found"));
+                .orElseThrow(() -> new OrderProcessingException("Order not found"));
 
         if (!agent.isAvailable()) {
-            throw new IllegalStateException("Agent not available");
+            throw new OrderProcessingException("Agent not available");
         }
 
         agent.setAvailable(false);
@@ -106,7 +108,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public void markOrderOutForDelivery(String orderNumber) {
         Order order = orderRepository.findByOrderNumber(orderNumber)
-                .orElseThrow(() -> new NoSuchElementException("Order not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
         order.setStatus(OrderStatus.OUT_FOR_DELIVERY);
         orderRepository.save(order);
@@ -115,14 +117,14 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public void markOrderDelivered(String orderNumber) {
         Order order = orderRepository.findByOrderNumber(orderNumber)
-                .orElseThrow(() -> new NoSuchElementException("Order not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
         order.setStatus(OrderStatus.DELIVERED);
         order.setDeliveredAt(LocalDateTime.now());
 
         if (order.getAssignedAgentId() != null) {
             DeliveryAgent agent = agentRepository.findById(order.getAssignedAgentId())
-                    .orElseThrow(() -> new NoSuchElementException("Agent not found"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Agent not found"));
             agent.setTotalDeliveries(agent.getTotalDeliveries() + 1);
             agent.setAvailable(true);
             agentRepository.save(agent);
@@ -134,14 +136,14 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public void cancelOrder(String orderNumber) {
         Order order = orderRepository.findByOrderNumber(orderNumber)
-                .orElseThrow(() -> new NoSuchElementException("Order not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
         order.setStatus(OrderStatus.CANCELLED);
 
         // Free the agent if assigned
         if (order.getAssignedAgentId() != null) {
             DeliveryAgent agent = agentRepository.findById(order.getAssignedAgentId())
-                    .orElseThrow(() -> new NoSuchElementException("Agent not found"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Agent not found"));
             agent.setAvailable(true);
             agentRepository.save(agent);
         }

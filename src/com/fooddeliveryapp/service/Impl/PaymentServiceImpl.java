@@ -1,5 +1,6 @@
 package com.fooddeliveryapp.service.Impl;
 
+import com.fooddeliveryapp.exception.OrderProcessingException;
 import com.fooddeliveryapp.model.Order;
 import com.fooddeliveryapp.repository.PaymentRepository;
 import com.fooddeliveryapp.service.PaymentService;
@@ -17,7 +18,7 @@ public class PaymentServiceImpl implements PaymentService {
     public boolean processPayment(Order order, PaymentStrategy strategy) {
 
         if (order.getFinalAmount() <= 0) {
-            throw new IllegalStateException("Order amount must be greater than zero");
+            throw new OrderProcessingException("Order amount must be greater than zero");
         }
 
         // Process payment using strategy

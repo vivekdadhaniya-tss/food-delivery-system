@@ -1,5 +1,6 @@
 package com.fooddeliveryapp.service.Impl;
 
+import com.fooddeliveryapp.exception.ResourceNotFoundException;
 import com.fooddeliveryapp.model.FoodItem;
 import com.fooddeliveryapp.model.Restaurant;
 import com.fooddeliveryapp.model.type.FoodCategory;
@@ -26,7 +27,7 @@ public class RestaurantServiceImpl implements RestaurantService {
     @Override
     public Restaurant updateRestaurant(Restaurant restaurant) {
         if (!restaurantRepository.existsById(restaurant.getId())) {
-            throw new NoSuchElementException("Restaurant not found with ID: " + restaurant.getId());
+            throw new ResourceNotFoundException("Restaurant not found with ID: " + restaurant.getId());
         }
         return restaurantRepository.save(restaurant);
     }
@@ -34,7 +35,7 @@ public class RestaurantServiceImpl implements RestaurantService {
     @Override
     public void removeRestaurant(int restaurantId) {
         if (!restaurantRepository.existsById(restaurantId)) {
-            throw new NoSuchElementException("Restaurant not found with ID: " + restaurantId);
+            throw new ResourceNotFoundException("Restaurant not found with ID: " + restaurantId);
         }
         restaurantRepository.deleteById(restaurantId);
     }
@@ -60,7 +61,7 @@ public class RestaurantServiceImpl implements RestaurantService {
     @Override
     public void addMenuItem(int restaurantId, FoodItem item) {
         Restaurant restaurant = restaurantRepository.findById(restaurantId)
-                .orElseThrow(() -> new NoSuchElementException("Restaurant not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
         restaurant.getMenu().computeIfAbsent(item.getCategory(), k -> new ArrayList<>()).add(item);
         restaurantRepository.save(restaurant);
     }
@@ -68,7 +69,7 @@ public class RestaurantServiceImpl implements RestaurantService {
     @Override
     public void updateMenuItem(int restaurantId, FoodItem item) {
         Restaurant restaurant = restaurantRepository.findById(restaurantId)
-                .orElseThrow(() -> new NoSuchElementException("Restaurant not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
         List<FoodItem> categoryItems = restaurant.getMenu().get(item.getCategory());
         if (categoryItems == null) {
             throw new NoSuchElementException("Category not found in menu");
@@ -83,7 +84,7 @@ public class RestaurantServiceImpl implements RestaurantService {
     @Override
     public void removeMenuItem(int restaurantId, String foodItemId) {
         Restaurant restaurant = restaurantRepository.findById(restaurantId)
-                .orElseThrow(() -> new NoSuchElementException("Restaurant not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
 
         restaurant.getMenu().values().forEach(list -> list.removeIf(i -> i.getId().equals(foodItemId)));
 
