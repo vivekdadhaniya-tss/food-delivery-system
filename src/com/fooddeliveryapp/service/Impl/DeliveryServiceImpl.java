@@ -6,6 +6,7 @@ import com.fooddeliveryapp.model.DeliveryAgent;
 import com.fooddeliveryapp.model.Order;
 import com.fooddeliveryapp.repository.DeliveryAgentRepository;
 import com.fooddeliveryapp.service.DeliveryService;
+import com.fooddeliveryapp.service.OrderService;
 
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -15,19 +16,22 @@ public class DeliveryServiceImpl implements DeliveryService {
 
     private final DeliveryAgentRepository agentRepository;
 
+    private OrderService orderService;
+
     // Queue of available agents for FIFO assignment
     private final Queue<DeliveryAgent> availableAgentsQueue = new ArrayBlockingQueue<>(100);
-//    private final Queue<DeliveryAgent> availableAgentsQueue = new LinkedList<>();
-
-    private final Queue<Order> pendingOrdersQueue = new LinkedList<>(); // currently work
+    private final Queue<Order> pendingOrdersQueue = new LinkedList<>();
 
     public DeliveryServiceImpl(DeliveryAgentRepository agentRepository) {
         this.agentRepository = agentRepository;
 
-        // Initialize queue with available agents at startup
         agentRepository.findAll().stream()
                 .filter(DeliveryAgent::isAvailable)
                 .forEach(availableAgentsQueue::offer);
+    }
+
+    public void setOrderService(OrderService orderService) {
+        this.orderService = orderService;
     }
 
     @Override
@@ -41,10 +45,16 @@ public class DeliveryServiceImpl implements DeliveryService {
             return Optional.empty();
         }
 
-        // Assign order
-        agent.setAvailable(false);
-        agentRepository.save(agent);
-        order.setAssignedAgentId(agent.getId());
+        // Automatically update the order status in the database
+        if (orderService != null) {
+            orderService.assignDeliveryAgent(order.getOrderNumber(), agent);
+        } else {
+            // Fallback just in case orderService isn't linked yet
+            agent.setAvailable(false);
+            agentRepository.save(agent);
+            order.setAssignedAgentId(agent.getId());
+        }
+
         return Optional.of(agent);
     }
 
@@ -58,12 +68,10 @@ public class DeliveryServiceImpl implements DeliveryService {
         DeliveryAgent agent = agentRepository.findById(agentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Agent not found"));
 
-        // Mark agent available again
         agent.setAvailable(true);
         agent.setTotalDeliveries(agent.getTotalDeliveries() + 1);
         agentRepository.save(agent);
 
-        // Add agent back to available queue
         availableAgentsQueue.offer(agent);
 
         // Check if there are pending orders

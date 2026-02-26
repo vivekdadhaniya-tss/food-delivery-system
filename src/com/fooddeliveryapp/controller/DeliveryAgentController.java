@@ -22,10 +22,7 @@ public class DeliveryAgentController {
         DeliveryAgent agent = (DeliveryAgent) user;
         while (true) {
             System.out.println("\n=== DELIVERY AGENT DASHBOARD ===");
-            System.out.println("1. View Profile & Earnings");
-            System.out.println("2. View Assigned Order");
-            System.out.println("3. Update Order Status");
-            System.out.println("4. Logout");
+            System.out.println("1. View Profile & Earnings\n2. View Assigned Order\n3. Update Order Status\n4. Logout");
 
             int choice = InputUtil.getInt("Choose an option: ");
 
@@ -34,10 +31,7 @@ public class DeliveryAgentController {
                     case 1 -> viewProfile(agent);
                     case 2 -> viewAssignedOrders(agent);
                     case 3 -> updateOrderStatus(agent);
-                    case 4 -> {
-                        System.out.println("Logging out...");
-                        return;
-                    }
+                    case 4 -> { System.out.println("Logging out..."); return; }
                     default -> System.out.println("Invalid choice.");
                 }
             } catch (FoodDeliveryException e) {
@@ -51,12 +45,12 @@ public class DeliveryAgentController {
         System.out.println("Name: " + agent.getName());
         System.out.println("Total Deliveries: " + agent.getTotalDeliveries());
         System.out.println("Rating: " + agent.getRating());
-        System.out.println("Estimated Earnings: ₹" + (agent.getTotalDeliveries() * 40)); // Assuming 40rs per delivery
+        System.out.println("Estimated Earnings: ₹" + (agent.getTotalDeliveries() * 40));
     }
 
     private void viewAssignedOrders(DeliveryAgent agent) {
         orderService.getOrdersByDeliveryAgent(agent.getId()).forEach(o ->
-                System.out.println(o.getOrderNumber() + " | Status: " + o.getStatus() + " | Amount: ₹" + o.getFinalAmount())
+                System.out.println("Order: " + o.getOrderNumber() + " | Status: " + o.getStatus() + " | Amount: ₹" + o.getFinalAmount() + " | Customer ID: " + o.getCustomerId())
         );
     }
 

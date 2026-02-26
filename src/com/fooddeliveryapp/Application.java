@@ -27,24 +27,23 @@ public class Application {
         AuthService authService = new AuthServiceImpl(userRepo);
         RestaurantService restaurantService = new RestaurantServiceImpl(restaurantRepo);
         OrderService orderService = new OrderServiceImpl(orderRepo, userRepo, agentRepo);
-        DeliveryService deliveryService = new DeliveryServiceImpl(agentRepo);
+        // 1. Create the DeliveryServiceImpl instance
+        DeliveryServiceImpl deliveryServiceImpl = new DeliveryServiceImpl(agentRepo);
+        DeliveryService deliveryService = deliveryServiceImpl;
+
+        // 2. Link the OrderService to it so it can update order statuses from the background queue
+        deliveryServiceImpl.setOrderService(orderService);
         PaymentService paymentService = new PaymentServiceImpl(paymentRepo);
         InvoiceService invoiceService = new InvoiceServiceImpl();
 
         AuthController authController = new AuthController(authService);
-        // FIX: Added paymentService to AdminController
         AdminController adminController = new AdminController(restaurantService, userService, orderService, paymentService);
-        // FIX: Added invoiceService to CustomerController
-        CustomerController customerController = new CustomerController(orderService, paymentService, restaurantService, invoiceService);
+        CustomerController customerController = new CustomerController(orderService, paymentService, restaurantService, invoiceService, deliveryService);
         DeliveryAgentController deliveryController = new DeliveryAgentController(orderService, deliveryService);
 
         while (true) {
             System.out.println("\n=== FOOD DELIVERY APP ===");
-            System.out.println("1. Register Customer");
-            System.out.println("2. Register Delivery Agent");
-            System.out.println("3. Register Admin");
-            System.out.println("4. Login");
-            System.out.println("5. Exit");
+            System.out.println("1. Register Customer\n2. Register Delivery Agent\n3. Register Admin\n4. Login\n5. Exit");
 
             int choice = InputUtil.getInt("Choose: ");
 
@@ -57,10 +56,7 @@ public class Application {
                         else if(user.getRole() == Role.CUSTOMER) customerController.start(scan, user);
                         else if (user.getRole() == Role.DELIVERY_AGENT) deliveryController.start(scan, user);
                     }
-                    case 5 -> {
-                        System.out.println("Exiting...");
-                        System.exit(0);
-                    }
+                    case 5 -> { System.out.println("Exiting..."); System.exit(0); }
                     default -> System.out.println("Invalid choice");
                 }
             } catch (FoodDeliveryException e) {

@@ -8,7 +8,7 @@ import com.fooddeliveryapp.strategy.*;
 import com.fooddeliveryapp.strategy.Impl.PaymentStrategy;
 import com.fooddeliveryapp.util.InputUtil;
 
-import java.util.List;
+import java.util.Optional;
 import java.util.Scanner;
 
 public class CustomerController {
@@ -16,12 +16,14 @@ public class CustomerController {
     private final PaymentService paymentService;
     private final RestaurantService restaurantService;
     private final InvoiceService invoiceService;
+    private final DeliveryService deliveryService; // Added DeliveryService
 
-    public CustomerController(OrderService orderService, PaymentService paymentService, RestaurantService restaurantService, InvoiceService invoiceService) {
+    public CustomerController(OrderService orderService, PaymentService paymentService, RestaurantService restaurantService, InvoiceService invoiceService, DeliveryService deliveryService) {
         this.orderService = orderService;
         this.paymentService = paymentService;
         this.restaurantService = restaurantService;
         this.invoiceService = invoiceService;
+        this.deliveryService = deliveryService;
     }
 
     public void start(Scanner scan, User user) {
@@ -29,21 +31,13 @@ public class CustomerController {
         while (true) {
             System.out.println("\n=== CUSTOMER DASHBOARD ===");
             System.out.println("--- Browse & Search ---");
-            System.out.println("1. View All Restaurants");
-            System.out.println("2. View All Food Items");
-            System.out.println("3. Search Food by Category");
-            System.out.println("4. Search Food by Name");
+            System.out.println("1. View All Restaurants\n2. View All Food Items\n3. Search Food by Category\n4. Search Food by Name");
             System.out.println("--- Cart & Checkout ---");
-            System.out.println("5. Manage Cart");
-            System.out.println("6. Checkout / Place Order");
+            System.out.println("5. Manage Cart\n6. Checkout / Place Order");
             System.out.println("--- Order Management ---");
-            System.out.println("7. Track Ongoing Order");
-            System.out.println("8. Cancel Order");
+            System.out.println("7. Track Ongoing Order\n8. Cancel Order");
             System.out.println("--- History & Feedback ---");
-            System.out.println("9. View Order History & Re-order");
-            System.out.println("10. Generate / View Invoice");
-            System.out.println("11. Rate & Review");
-            System.out.println("12. Logout");
+            System.out.println("9. View Order History & Re-order\n10. Generate / View Invoice\n11. Rate & Review\n12. Logout");
 
             int choice = InputUtil.getInt("Choose an option: ");
 
@@ -72,7 +66,7 @@ public class CustomerController {
     private void viewAllFoodItems() {
         restaurantService.getActiveRestaurants().forEach(r -> {
             System.out.println("\n--- " + r.getName() + " ---");
-            restaurantService.getMenu(r.getId()).forEach(i -> System.out.println(i.getId() + " | " + i.getName() + " | ₹" + i.getPrice()));
+            restaurantService.getMenu(r.getId()).forEach(i -> System.out.println("ID: " + i.getId() + " | Name: " + i.getName() + " | Price: ₹" + i.getPrice() + " | Stock: " + i.getStock() + " | Category: " + i.getCategory()));
         });
     }
 
@@ -80,14 +74,14 @@ public class CustomerController {
         System.out.println("1.VEG 2.NON_VEG 3.DRINKS 4.DESSERT");
         FoodCategory cat = FoodCategory.values()[InputUtil.getInt("Choose (1-4): ") - 1];
         restaurantService.getActiveRestaurants().forEach(r -> {
-            restaurantService.searchMenuItems(r.getId(), null, cat).forEach(i -> System.out.println(r.getName() + " | " + i.getName() + " | ₹" + i.getPrice()));
+            restaurantService.searchMenuItems(r.getId(), null, cat).forEach(i -> System.out.println(r.getName() + " | ID: " + i.getId() + " | Name: " + i.getName() + " | Price: ₹" + i.getPrice() + " | Stock: " + i.getStock()));
         });
     }
 
     private void searchFoodByName() {
         String name = InputUtil.getString("Enter food name: ");
         restaurantService.getActiveRestaurants().forEach(r -> {
-            restaurantService.searchMenuItems(r.getId(), name, null).forEach(i -> System.out.println(r.getName() + " | " + i.getName() + " | ₹" + i.getPrice()));
+            restaurantService.searchMenuItems(r.getId(), name, null).forEach(i -> System.out.println(r.getName() + " | ID: " + i.getId() + " | Name: " + i.getName() + " | Price: ₹" + i.getPrice() + " | Stock: " + i.getStock()));
         });
     }
 
@@ -121,12 +115,21 @@ public class CustomerController {
         Order order = orderService.placeOrder(customer.getId(), strategy);
         paymentService.processPayment(order, strategy);
         System.out.println("Order Placed: " + order.getOrderNumber());
+
+        // Auto-assign order to a delivery agent
+        Optional<DeliveryAgent> agentOpt = deliveryService.assignOrder(order);
+        if (agentOpt.isPresent()) {
+            orderService.assignDeliveryAgent(order.getOrderNumber(), agentOpt.get());
+            System.out.println("Order assigned to Delivery Agent: " + agentOpt.get().getName());
+        } else {
+            System.out.println("No delivery agents available right now. Order will be assigned later.");
+        }
     }
 
     private void trackOrders(Customer customer) {
         orderService.getOrdersByCustomer(customer.getId()).stream()
                 .filter(o -> o.getStatus() != com.fooddeliveryapp.model.type.OrderStatus.DELIVERED && o.getStatus() != com.fooddeliveryapp.model.type.OrderStatus.CANCELLED)
-                .forEach(o -> System.out.println(o.getOrderNumber() + " | Status: " + o.getStatus()));
+                .forEach(o -> System.out.println("Order: " + o.getOrderNumber() + " | Status: " + o.getStatus() + " | Agent ID: " + (o.getAssignedAgentId() != null ? o.getAssignedAgentId() : "Unassigned")));
     }
 
     private void cancelOrder(Customer customer) {
@@ -135,7 +138,7 @@ public class CustomerController {
     }
 
     private void viewOrderHistory(Customer customer) {
-        orderService.getOrdersByCustomer(customer.getId()).forEach(o -> System.out.println(o.getOrderNumber() + " | " + o.getStatus() + " | ₹" + o.getFinalAmount()));
+        orderService.getOrdersByCustomer(customer.getId()).forEach(o -> System.out.println("Order: " + o.getOrderNumber() + " | Status: " + o.getStatus() + " | Amount: ₹" + o.getFinalAmount()));
     }
 
     private void generateInvoice(Customer customer) {

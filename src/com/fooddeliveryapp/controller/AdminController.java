@@ -7,6 +7,7 @@ import com.fooddeliveryapp.service.*;
 import com.fooddeliveryapp.service.Impl.OrderServiceImpl;
 import com.fooddeliveryapp.strategy.*;
 import com.fooddeliveryapp.util.InputUtil;
+import com.fooddeliveryapp.util.IdGenerator;
 
 import java.util.*;
 
@@ -27,20 +28,13 @@ public class AdminController {
         while (true) {
             System.out.println("\n=== ADMIN DASHBOARD ===");
             System.out.println("--- Restaurant & Menu ---");
-            System.out.println("1. Manage Restaurants");
-            System.out.println("2. Manage Menu Items");
+            System.out.println("1. Manage Restaurants\n2. Manage Menu Items");
             System.out.println("--- Users & Agents ---");
-            System.out.println("3. View All Customers");
-            System.out.println("4. View All Delivery Agents");
-            System.out.println("5. View Available Delivery Agents");
+            System.out.println("3. View All Customers\n4. View All Delivery Agents\n5. View Available Delivery Agents");
             System.out.println("--- Orders & Finance ---");
-            System.out.println("6. View All Order History");
-            System.out.println("7. View Ongoing Orders");
-            System.out.println("8. View Payment History");
-            System.out.println("9. View Total Revenue");
+            System.out.println("6. View All Order History\n7. View Ongoing Orders\n8. View Payment History\n9. View Total Revenue");
             System.out.println("--- Settings ---");
-            System.out.println("10. Set Discount Strategy");
-            System.out.println("11. Logout");
+            System.out.println("10. Set Discount Strategy\n11. Logout");
 
             int choice = InputUtil.getInt("Choose an option: ");
 
@@ -56,10 +50,7 @@ public class AdminController {
                     case 8 -> viewPaymentHistory();
                     case 9 -> viewTotalRevenue();
                     case 10 -> setDiscountStrategy();
-                    case 11 -> {
-                        System.out.println("Logging out...");
-                        return;
-                    }
+                    case 11 -> { System.out.println("Logging out..."); return; }
                     default -> System.out.println("Invalid choice.");
                 }
             } catch (FoodDeliveryException e) {
@@ -75,7 +66,7 @@ public class AdminController {
         int choice = InputUtil.getInt("Choose: ");
         if (choice == 1) {
             String name = InputUtil.getString("Restaurant Name: ");
-            Restaurant r = new Restaurant(com.fooddeliveryapp.util.IdGenerator.nextRestaurantId(), name, true, new HashMap<>(), new ArrayList<>(), 0);
+            Restaurant r = new Restaurant(IdGenerator.nextRestaurantId(), name, true, new HashMap<>(), new ArrayList<>(), 0);
             restaurantService.addRestaurant(r);
             System.out.println("Added ID: " + r.getId());
         } else if (choice == 2) {
@@ -97,35 +88,43 @@ public class AdminController {
         System.out.println("\n1. Add | 2. View | 3. Remove | 4. Update");
         int choice = InputUtil.getInt("Choose: ");
         if (choice == 1) {
-            FoodItem item = new FoodItem(InputUtil.getString("ID: "), InputUtil.getString("Name: "), InputUtil.getDouble("Price: "), InputUtil.getInt("Stock: "), FoodCategory.VEG);
+            String id = IdGenerator.nextFoodId(); // Auto-assign Food ID
+            String name = InputUtil.getString("Name: ");
+            double price = InputUtil.getDouble("Price: ");
+            int stock = InputUtil.getInt("Stock: ");
+            System.out.println("Categories: 1.VEG 2.NON_VEG 3.DRINKS 4.DESSERT");
+            FoodCategory category = FoodCategory.values()[InputUtil.getInt("Choose Category (1-4): ") - 1];
+            FoodItem item = new FoodItem(id, name, price, stock, category);
             restaurantService.addMenuItem(rId, item);
+            System.out.println("Menu item added with ID: " + id);
         } else if (choice == 2) {
-            restaurantService.getMenu(rId).forEach(i -> System.out.println(i.getId() + " | " + i.getName() + " | ₹" + i.getPrice()));
+            restaurantService.getMenu(rId).forEach(i -> System.out.println("ID: " + i.getId() + " | Name: " + i.getName() + " | Price: ₹" + i.getPrice() + " | Stock: " + i.getStock() + " | Category: " + i.getCategory()));
         } else if (choice == 3) {
             restaurantService.removeMenuItem(rId, InputUtil.getString("Item ID: "));
+            System.out.println("Removed.");
         }
     }
 
     private void viewUsersByRole(Role role) {
-        userService.getUsersByRole(role).forEach(u -> System.out.println("ID: " + u.getId() + " | Name: " + u.getName()));
+        userService.getUsersByRole(role).forEach(u -> System.out.println("ID: " + u.getId() + " | Name: " + u.getName() + " | Email: " + u.getEmail() + " | Phone: " + u.getPhone()));
     }
 
     private void viewAvailableAgents() {
-        userService.getAvailableDeliveryAgents().forEach(a -> System.out.println("ID: " + a.getId() + " | Name: " + a.getName()));
+        userService.getAvailableDeliveryAgents().forEach(a -> System.out.println("ID: " + a.getId() + " | Name: " + a.getName() + " | Email: " + a.getEmail() + " | Phone: " + a.getPhone()));
     }
 
     private void viewAllOrders() {
-        orderService.getAllOrders().forEach(o -> System.out.println(o.getOrderNumber() + " | Status: " + o.getStatus() + " | ₹" + o.getFinalAmount()));
+        orderService.getAllOrders().forEach(o -> System.out.println("Order: " + o.getOrderNumber() + " | Status: " + o.getStatus() + " | Amount: ₹" + o.getFinalAmount() + " | Customer ID: " + o.getCustomerId() + " | Agent ID: " + (o.getAssignedAgentId() != null ? o.getAssignedAgentId() : "Unassigned")));
     }
 
     private void viewOngoingOrders() {
         orderService.getAllOrders().stream()
                 .filter(o -> o.getStatus() != OrderStatus.DELIVERED && o.getStatus() != OrderStatus.CANCELLED)
-                .forEach(o -> System.out.println(o.getOrderNumber() + " | Status: " + o.getStatus()));
+                .forEach(o -> System.out.println("Order: " + o.getOrderNumber() + " | Status: " + o.getStatus() + " | Agent ID: " + (o.getAssignedAgentId() != null ? o.getAssignedAgentId() : "Unassigned")));
     }
 
     private void viewPaymentHistory() {
-        paymentService.getAllPayments().forEach(p -> System.out.println(p.getPaymentId() + " | Order: " + p.getOrderNumber() + " | ₹" + p.getAmount() + " | " + p.getMethod()));
+        paymentService.getAllPayments().forEach(p -> System.out.println("Payment ID: " + p.getPaymentId() + " | Order: " + p.getOrderNumber() + " | Amount: ₹" + p.getAmount() + " | Method: " + p.getMethod() + " | Status: " + p.getStatus()));
     }
 
     private void viewTotalRevenue() {
