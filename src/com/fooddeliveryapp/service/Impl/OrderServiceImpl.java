@@ -1,5 +1,6 @@
 package com.fooddeliveryapp.service.Impl;
 
+import com.fooddeliveryapp.exception.CartOperationException;
 import com.fooddeliveryapp.exception.OrderProcessingException;
 import com.fooddeliveryapp.exception.ResourceNotFoundException;
 import com.fooddeliveryapp.model.*;
@@ -47,15 +48,15 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Order placeOrder(int customerId, PaymentStrategy paymentStrategy) {
         if(paymentStrategy == null){
-            throw new IllegalArgumentException("Payment method must be provided");
+            throw new OrderProcessingException("Payment method must be provided");
         }
 
         Customer customer = (Customer) userRepository.findById(customerId)
-                .orElseThrow(() -> new NoSuchElementException("Customer not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
 
         Cart cart = customer.getActiveCart();
         if (cart.isEmpty()) {
-            throw new IllegalStateException("Cart is empty");
+            throw new CartOperationException("Cart is empty");
         }
 
         String orderNumber = IdGenerator.nextOrderNumber();
@@ -91,7 +92,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public void assignDeliveryAgent(String orderNumber, DeliveryAgent agent) {
         Order order = orderRepository.findByOrderNumber(orderNumber)
-                .orElseThrow(() -> new OrderProcessingException("Order not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
         if (!agent.isAvailable()) {
             throw new OrderProcessingException("Agent not available");

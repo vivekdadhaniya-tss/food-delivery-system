@@ -1,5 +1,7 @@
 package com.fooddeliveryapp.service.Impl;
 
+import com.fooddeliveryapp.exception.OrderProcessingException;
+import com.fooddeliveryapp.exception.ResourceNotFoundException;
 import com.fooddeliveryapp.model.DeliveryAgent;
 import com.fooddeliveryapp.model.Order;
 import com.fooddeliveryapp.repository.DeliveryAgentRepository;
@@ -50,10 +52,11 @@ public class DeliveryServiceImpl implements DeliveryService {
     public void completeDelivery(Order order) {
 
         Integer agentId = order.getAssignedAgentId();
-        if (agentId == null) throw new IllegalStateException("Order has no assigned agent");
+        if (agentId == null)
+            throw new OrderProcessingException("Order has no assigned agent");
 
         DeliveryAgent agent = agentRepository.findById(agentId)
-                .orElseThrow(() -> new NoSuchElementException("Agent not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Agent not found"));
 
         // Mark agent available again
         agent.setAvailable(true);

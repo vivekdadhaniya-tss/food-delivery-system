@@ -1,5 +1,6 @@
 package com.fooddeliveryapp.service.Impl;
 
+import com.fooddeliveryapp.exception.AuthenticationException;
 import com.fooddeliveryapp.exception.FoodDeliveryException;
 import com.fooddeliveryapp.exception.UserAlreadyExistsException;
 import com.fooddeliveryapp.model.*;
@@ -85,7 +86,7 @@ public class AuthServiceImpl implements AuthService {
             return agent;
         }
 
-        throw new IllegalArgumentException("Invalid role");
+        throw new UserAlreadyExistsException("Invalid role");
     }
 
     // Login
@@ -94,11 +95,11 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository.findByEmail(email);
 
         if (user == null) {
-            throw new IllegalArgumentException("User not found");
+            throw new AuthenticationException("User not found");
         }
 
         if (!user.getPassword().equals(password)) {
-            throw new IllegalArgumentException("Invalid password");
+            throw new AuthenticationException("Invalid password");
         }
 
         return user;

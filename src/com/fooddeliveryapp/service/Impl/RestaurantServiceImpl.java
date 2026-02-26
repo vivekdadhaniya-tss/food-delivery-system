@@ -72,7 +72,7 @@ public class RestaurantServiceImpl implements RestaurantService {
                 .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
         List<FoodItem> categoryItems = restaurant.getMenu().get(item.getCategory());
         if (categoryItems == null) {
-            throw new NoSuchElementException("Category not found in menu");
+            throw new ResourceNotFoundException("Category not found in menu");
         }
 
         // Remove old item with same ID and add updated

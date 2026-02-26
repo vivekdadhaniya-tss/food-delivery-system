@@ -4,6 +4,7 @@ import com.fooddeliveryapp.controller.AdminController;
 import com.fooddeliveryapp.controller.AuthController;
 import com.fooddeliveryapp.controller.CustomerController;
 import com.fooddeliveryapp.controller.DeliveryAgentController;
+import com.fooddeliveryapp.exception.FoodDeliveryException;
 import com.fooddeliveryapp.model.User;
 import com.fooddeliveryapp.model.type.Role;
 import com.fooddeliveryapp.repository.*;
@@ -73,8 +74,13 @@ public class Application {
                     }
                     default -> System.out.println("Invalid choice");
                 }
-            } catch (Exception e) {
+            } catch (FoodDeliveryException e) {
+                // Clean business logic errors
                 System.out.println("Error: " + e.getMessage());
+            } catch (Exception e) {
+                // Unexpected system crashes
+                System.out.println("System Error: Something went wrong!");
+                e.printStackTrace();
             }
         }
     }

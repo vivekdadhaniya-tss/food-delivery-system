@@ -1,5 +1,6 @@
 package com.fooddeliveryapp.controller;
 
+import com.fooddeliveryapp.exception.FoodDeliveryException;
 import com.fooddeliveryapp.model.*;
 import com.fooddeliveryapp.service.OrderService;
 import com.fooddeliveryapp.service.PaymentService;
@@ -51,8 +52,11 @@ public class CustomerController {
                     }
                     default -> System.out.println("Invalid choice.");
                 }
-            } catch (Exception e) {
+            } catch (FoodDeliveryException e) {
                 System.out.println("Error: " + e.getMessage());
+            } catch (Exception e) {
+                System.out.println("System Error: Something went wrong!");
+                e.printStackTrace();
             }
         }
     }

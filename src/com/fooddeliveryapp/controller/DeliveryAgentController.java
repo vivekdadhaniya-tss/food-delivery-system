@@ -1,5 +1,6 @@
 package com.fooddeliveryapp.controller;
 
+import com.fooddeliveryapp.exception.FoodDeliveryException;
 import com.fooddeliveryapp.model.DeliveryAgent;
 import com.fooddeliveryapp.model.Order;
 import com.fooddeliveryapp.model.User;
@@ -44,8 +45,11 @@ public class DeliveryAgentController {
                     }
                     default -> System.out.println("Invalid choice.");
                 }
-            } catch (Exception e) {
+            } catch (FoodDeliveryException e) {
                 System.out.println("Error: " + e.getMessage());
+            } catch (Exception e) {
+                System.out.println("System Error: Something went wrong!");
+                e.printStackTrace();
             }
         }
     }
