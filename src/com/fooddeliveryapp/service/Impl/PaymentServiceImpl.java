@@ -2,12 +2,15 @@ package com.fooddeliveryapp.service.Impl;
 
 import com.fooddeliveryapp.exception.OrderProcessingException;
 import com.fooddeliveryapp.model.Order;
+import com.fooddeliveryapp.model.Payment;
+import com.fooddeliveryapp.model.type.PaymentMethod;
 import com.fooddeliveryapp.repository.PaymentRepository;
 import com.fooddeliveryapp.service.PaymentService;
 import com.fooddeliveryapp.strategy.Impl.PaymentStrategy;
+import com.fooddeliveryapp.util.IdGenerator;
+import java.util.List;
 
 public class PaymentServiceImpl implements PaymentService {
-
     private final PaymentRepository paymentRepository;
 
     public PaymentServiceImpl(PaymentRepository paymentRepository) {
@@ -16,17 +19,24 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public boolean processPayment(Order order, PaymentStrategy strategy) {
-
         if (order.getFinalAmount() <= 0) {
             throw new OrderProcessingException("Order amount must be greater than zero");
         }
-
-        // Process payment using strategy
         strategy.pay(order.getFinalAmount());
 
-        // Record payment in repository
-        // paymentRepository.save(order.getOrderNumber(), strategy.getPaymentType(), order.getFinalAmount());   AFTER CHECK
-
+        Payment payment = new Payment(
+                IdGenerator.nextPaymentId(),
+                order.getOrderNumber(),
+                order.getFinalAmount(),
+                PaymentMethod.valueOf(strategy.getPaymentType())
+        );
+        payment.markSuccess();
+        paymentRepository.save(payment);
         return true;
+    }
+
+    @Override
+    public List<Payment> getAllPayments() {
+        return paymentRepository.findAll();
     }
 }
