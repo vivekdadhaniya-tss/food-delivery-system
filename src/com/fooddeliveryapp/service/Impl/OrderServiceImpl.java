@@ -25,7 +25,7 @@ public class OrderServiceImpl implements OrderService {
     private final DeliveryAgentRepository agentRepository;
     private DiscountStrategy discountStrategy = new NoDiscount();
     private final double deliveryFee = 40; // flat fee
-    private final double taxRate = 0.05;   // 5% tax
+    private final double taxRate = 5.0;   // 5% tax
 
     public OrderServiceImpl(OrderRepository orderRepository,
                             UserRepository userRepository,
@@ -69,7 +69,7 @@ public class OrderServiceImpl implements OrderService {
 
         double subTotal = cart.getSubTotal();
         double discount = discountStrategy.calculateDiscount(order);
-        double tax = (subTotal - discount) * taxRate;
+        double tax = (subTotal - discount) * (taxRate / 100);
         double finalAmount = subTotal - discount + tax + deliveryFee;
 
         order.setSubTotal(subTotal);

@@ -28,27 +28,19 @@ public class Payment {
         this.createdAt = LocalDateTime.now();
     }
 
-    // ===== Business Methods =====
-
+    // business method
     public void markSuccess() {
         this.status = PaymentStatus.SUCCESS;
     }
-
     public void markFailed() {
         this.status = PaymentStatus.FAILED;
     }
 
-    // ===== Getters =====
-
+    // getters
     public String getPaymentId() { return paymentId; }
-
     public String getOrderNumber() { return orderNumber; }
-
     public double getAmount() { return amount; }
-
     public PaymentMethod getMethod() { return method; }
-
     public PaymentStatus getStatus() { return status; }
-
     public LocalDateTime getCreatedAt() { return createdAt; }
 }

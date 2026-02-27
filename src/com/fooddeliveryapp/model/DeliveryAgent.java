@@ -24,30 +24,24 @@ public class DeliveryAgent extends User {
         return Role.DELIVERY_AGENT;
     }
 
-    // ===== GETTERS =====
-
+    // getters
     public boolean isAvailable() {
         return available;
     }
-
     public double getRating() {
         return rating;
     }
-
     public int getTotalDeliveries() {
         return totalDeliveries;
     }
 
-    // ===== SETTERS (Used by Services) =====
-
+    // setters
     public void setAvailable(boolean available) {
         this.available = available;
     }
-
     public void setRating(double rating) {
         this.rating = rating;
     }
-
     public void setTotalDeliveries(int totalDeliveries) {
         this.totalDeliveries = totalDeliveries;
     }

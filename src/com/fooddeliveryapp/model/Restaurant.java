@@ -30,48 +30,39 @@ public class Restaurant {
         this.totalOrders = totalOrders;
     }
 
-
+    // getters
     public int getId() {
         return id;
     }
-
     public String getName() {
         return name;
     }
-
     public boolean isActive() {
         return active;
     }
-
     public Map<FoodCategory, List<FoodItem>> getMenu() {
         return menu;
     }
-
     public List<Integer> getRatings() {
         return ratings;
     }
-
     public int getTotalOrders() {
         return totalOrders;
     }
 
-
+    // setters
     public void setName(String name) {
         this.name = name;
     }
-
     public void setActive(boolean active) {
         this.active = active;
     }
-
     public void setMenu(Map<FoodCategory, List<FoodItem>> menu) {
         this.menu = menu;
     }
-
     public void setRatings(List<Integer> ratings) {
         this.ratings = ratings;
     }
-
     public void setTotalOrders(int totalOrders) {
         this.totalOrders = totalOrders;
     }
@@ -83,8 +74,4 @@ public class Restaurant {
         return id == that.id;
     }
 
-//    @Override
-//    public int hashCode() {
-//        return Integer.hashCode(id);
-//    }
 }

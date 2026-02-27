@@ -21,16 +21,14 @@ public class Customer extends User {
     public Role getRole() {
         return Role.CUSTOMER;
     }
-
     public Cart getActiveCart() {
         return activeCart;
+    }
+    public List<Order> getOrderHistory() {
+        return List.copyOf(orderHistory);
     }
 
     public void addOrder(Order order) {
         orderHistory.add(order);
-    }
-
-    public List<Order> getOrderHistory() {
-        return List.copyOf(orderHistory);
     }
 }

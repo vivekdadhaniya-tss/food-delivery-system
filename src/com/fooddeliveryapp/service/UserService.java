@@ -9,7 +9,7 @@ import java.util.Optional;
 
 public interface UserService {
 
-    // ===== Generic User CRUD =====
+    // User CRUD
     User createUser(User user);
     Optional<User> getUserById(int id);
     List<User> getAllUsers();
@@ -18,7 +18,7 @@ public interface UserService {
     boolean existsById(int id);
     Optional<User> getUserByEmail(String email);
 
-    // ===== Role-based Queries =====
+    // Role-based Queries
     List<User> getUsersByRole(Role role);
 
     // ===== Delivery Agent Specific =====

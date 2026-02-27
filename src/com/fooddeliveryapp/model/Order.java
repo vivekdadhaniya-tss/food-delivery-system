@@ -38,7 +38,7 @@ public class Order {
         this.createdAt = LocalDateTime.now();
     }
 
-    // ===== GETTERS =====
+    // getters
 
     public String getOrderNumber() { return orderNumber; }
     public int getCustomerId() { return customerId; }
@@ -57,7 +57,7 @@ public class Order {
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getDeliveredAt() { return deliveredAt; }
 
-    // ===== SETTERS (Used by Services Only) =====
+    // setters
 
     public void setSubTotal(double subTotal) { this.subTotal = subTotal; }
     public void setDiscount(double discount) { this.discount = discount; }

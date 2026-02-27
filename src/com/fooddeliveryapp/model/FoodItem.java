@@ -24,41 +24,26 @@ public class FoodItem {
         this.category = category;
     }
 
-    // ===== GETTERS =====
-
+    // getters
     public String getId() { return id; }
-
     public String getName() { return name; }
-
     public double getPrice() { return price; }
-
     public int getStock() { return stock; }
-
     public FoodCategory getCategory() { return category; }
 
-    // ===== SETTERS (Used by Services) =====
-
+    // setters
     public void setName(String name) { this.name = name; }
-
     public void setPrice(double price) { this.price = price; }
-
     public void setStock(int stock) { this.stock = stock; }
-
     public void setCategory(FoodCategory category) {
         this.category = category;
     }
 
-    // equals & hashCode based only on id
-
+    // equals based only on id
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof FoodItem that)) return false;
         return Objects.equals(id, that.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
     }
 }
