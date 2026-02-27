@@ -10,10 +10,10 @@ import java.util.Optional;
 
 public interface OrderService {
 
-    // ORDER CREATION
+    // order creation
     Order placeOrder(int customerId, PaymentStrategy paymentStrategy);
 
-    // ORDER STATUS
+    // order status
     void assignDeliveryAgent(String orderNumber, DeliveryAgent agent);
 
     void markOrderOutForDelivery(String orderNumber);
@@ -22,7 +22,7 @@ public interface OrderService {
 
     void cancelOrder(String orderNumber);
 
-    // RETRIEVAL
+    // retrieval
     Optional<Order> getOrderById(String orderNumber);
 
     List<Order> getOrdersByCustomer(int customerId);

@@ -49,8 +49,8 @@ public class DeliveryServiceImpl implements DeliveryService {
 
     @Override
     public void completeDelivery(Order order) {
-        // OrderServiceImpl already updates the agent's availability and total deliveries!
-        // We only need to check if there are pending orders waiting for this newly freed agent.
+        // OrderServiceImpl already updates the agent's availability and total deliveries
+        // We only need to check if there are pending orders waiting for this newly freed agent
         Order pendingOrder = pendingOrdersQueue.poll();
         if (pendingOrder != null) {
             assignOrder(pendingOrder);
