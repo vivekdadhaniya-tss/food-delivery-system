@@ -24,7 +24,7 @@ public class OrderServiceImpl implements OrderService {
     private final UserRepository userRepository;
     private final DeliveryAgentRepository agentRepository;
     private DiscountStrategy discountStrategy = new NoDiscount();
-    private final double deliveryFee = 40; // flat fee for simplicity
+    private final double deliveryFee = 40; // flat fee
     private final double taxRate = 0.05;   // 5% tax
 
     public OrderServiceImpl(OrderRepository orderRepository,
@@ -82,13 +82,13 @@ public class OrderServiceImpl implements OrderService {
         orderRepository.save(order);
         cart.clear();
 
-        // Dynamic payment per order
+        // dynamic payment per order
         paymentStrategy.pay(finalAmount);
 
         return order;
     }
 
-    // DELIVERY AGENT ASSIGNMENT
+    // delivery agent assignment
     @Override
     public void assignDeliveryAgent(String orderNumber, DeliveryAgent agent) {
         Order order = orderRepository.findByOrderNumber(orderNumber)

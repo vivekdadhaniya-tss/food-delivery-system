@@ -22,7 +22,6 @@ public class Application {
 
         UserService userService = new UserServiceImpl(userRepo);
 
-        // FIX: Pass agentRepo to AuthServiceImpl here!
         AuthService authService = new AuthServiceImpl(userRepo, agentRepo);
 
         RestaurantService restaurantService = new RestaurantServiceImpl(restaurantRepo);

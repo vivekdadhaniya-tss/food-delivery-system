@@ -70,7 +70,7 @@ public class AdminController {
             restaurantService.addRestaurant(r);
             System.out.println("Added ID: " + r.getId());
         } else if (choice == 2) {
-            restaurantService.getAllRestaurants().forEach(r -> System.out.println("ID: " + r.getId() + " | Name: " + r.getName() + " | Active: " + r.isActive()));
+            restaurantService.getAllRestaurants().forEach(r -> System.out.println("ID: " + r.getId() + " | Name: " + r.getName() + " | Active: " + r.isActive() + " | Rating: " + r.getRatings() + " | Total Orders: " + r.getTotalOrders()));
         } else if (choice == 3) {
             restaurantService.removeRestaurant(InputUtil.getInt("ID to remove: "));
             System.out.println("Removed.");
@@ -88,7 +88,7 @@ public class AdminController {
         System.out.println("\n1. Add | 2. View | 3. Remove | 4. Update");
         int choice = InputUtil.getInt("Choose: ");
         if (choice == 1) {
-            String id = IdGenerator.nextFoodId(); // Auto-assign Food ID
+            String id = IdGenerator.nextFoodId();
             String name = InputUtil.getString("Name: ");
             double price = InputUtil.getDouble("Price: ");
             int stock = InputUtil.getInt("Stock: ");
