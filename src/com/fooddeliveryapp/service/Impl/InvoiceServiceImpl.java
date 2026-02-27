@@ -1,4 +1,4 @@
-package com.fooddeliveryapp.service.impl;
+package com.fooddeliveryapp.service.Impl;
 
 import com.fooddeliveryapp.model.Order;
 import com.fooddeliveryapp.model.OrderItem;
@@ -14,7 +14,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     public String generateInvoice(Order order) {
 
         StringBuilder sb = new StringBuilder();
-        sb.append("===== FOOD DELIVERY INVOICE =====\n");
+        sb.append("\n\n===== FOOD DELIVERY INVOICE =====\n");
         sb.append("Order Number: ").append(order.getOrderNumber()).append("\n");
         sb.append("Customer ID  : ").append(order.getCustomerId()).append("\n");
         sb.append("Restaurant ID: ").append(order.getRestaurantId()).append("\n");

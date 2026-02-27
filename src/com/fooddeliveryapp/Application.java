@@ -8,7 +8,7 @@ import com.fooddeliveryapp.repository.*;
 import com.fooddeliveryapp.repository.inmemory.*;
 import com.fooddeliveryapp.service.*;
 import com.fooddeliveryapp.service.Impl.*;
-import com.fooddeliveryapp.service.impl.InvoiceServiceImpl;
+import com.fooddeliveryapp.service.Impl.InvoiceServiceImpl;
 import com.fooddeliveryapp.util.InputUtil;
 
 public class Application {
@@ -21,9 +21,7 @@ public class Application {
         PaymentRepository paymentRepo = new InMemoryPaymentRepository();
 
         UserService userService = new UserServiceImpl(userRepo);
-
         AuthService authService = new AuthServiceImpl(userRepo, agentRepo);
-
         RestaurantService restaurantService = new RestaurantServiceImpl(restaurantRepo);
         OrderService orderService = new OrderServiceImpl(orderRepo, userRepo, agentRepo);
 

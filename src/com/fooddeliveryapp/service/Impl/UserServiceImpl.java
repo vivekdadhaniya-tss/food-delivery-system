@@ -19,7 +19,7 @@ public class UserServiceImpl implements UserService {
         this.userRepository = userRepository;
     }
 
-    // ===== Generic User CRUD =====
+    // Generic User CRUD
     @Override
     public User createUser(User user) {
         // Only allow one Admin
@@ -60,7 +60,7 @@ public class UserServiceImpl implements UserService {
                 .findFirst();
     }
 
-    // ===== Role-based Queries =====
+    // Role-based Queries
     @Override
     public List<User> getUsersByRole(Role role) {
         return userRepository.findAll().stream()
@@ -68,7 +68,7 @@ public class UserServiceImpl implements UserService {
                 .collect(Collectors.toList());
     }
 
-    // ===== Delivery Agent Specific =====
+    // Delivery Agent Specific
     @Override
     public List<DeliveryAgent> getAllDeliveryAgents() {
         return userRepository.findAll().stream()

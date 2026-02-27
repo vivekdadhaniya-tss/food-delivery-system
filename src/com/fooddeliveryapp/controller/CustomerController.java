@@ -116,7 +116,7 @@ public class CustomerController {
         paymentService.processPayment(order, strategy);
         System.out.println("Order Placed: " + order.getOrderNumber());
 
-        // Auto-assign order to a delivery agent
+        // assign order to a delivery agent
         Optional<DeliveryAgent> agentOpt = deliveryService.assignOrder(order);
         if (agentOpt.isPresent()) {
             System.out.println("Order assigned to Delivery Agent: " + agentOpt.get().getName());

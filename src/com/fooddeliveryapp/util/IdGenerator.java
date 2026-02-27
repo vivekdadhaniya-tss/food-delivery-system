@@ -9,7 +9,7 @@ public final class IdGenerator {
     private static final AtomicInteger AGENT_ID = new AtomicInteger(1);
     private static final AtomicInteger ORDER_ID = new AtomicInteger(1000);
     private static final AtomicInteger PAYMENT_ID = new AtomicInteger(5000);
-    private static final AtomicInteger FOOD_ID = new AtomicInteger(101); // Added for Food Items
+    private static final AtomicInteger FOOD_ID = new AtomicInteger(101);
 
     private IdGenerator() {}
 
@@ -18,5 +18,5 @@ public final class IdGenerator {
     public static int nextAgentId() { return AGENT_ID.getAndIncrement(); }
     public static String nextOrderNumber() { return "ORD-" + ORDER_ID.getAndIncrement(); }
     public static String nextPaymentId() { return "PAY-" + PAYMENT_ID.getAndIncrement(); }
-    public static String nextFoodId() { return "F" + FOOD_ID.getAndIncrement(); } // Auto-assign Food ID
+    public static String nextFoodId() { return "F" + FOOD_ID.getAndIncrement(); }
 }
