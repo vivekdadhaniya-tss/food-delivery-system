@@ -5,17 +5,15 @@ import com.fooddeliveryapp.model.type.Role;
 public class DeliveryAgent extends User {
 
     private boolean available;
-    private double rating;
+    private double averageRating;
+    private int totalRatings;
     private int totalDeliveries;
 
-    public DeliveryAgent(int id,
-                         String name,
-                         String phone,
-                         String email,
-                         String password) {
+    public DeliveryAgent(String id, String name, String phone, String email, String password) {
         super(id, name, phone, email, password);
         this.available = true;
-        this.rating = 0.0;
+        this.averageRating = 0.0;
+        this.totalRatings = 0;
         this.totalDeliveries = 0;
     }
 
@@ -24,31 +22,47 @@ public class DeliveryAgent extends User {
         return Role.DELIVERY_AGENT;
     }
 
-    // ===== GETTERS =====
+
 
     public boolean isAvailable() {
         return available;
     }
 
     public double getRating() {
-        return rating;
+        return averageRating;
+    }
+
+    public int getTotalRatings() {
+        return totalRatings;
     }
 
     public int getTotalDeliveries() {
         return totalDeliveries;
     }
 
-    // ===== SETTERS (Used by Services) =====
 
-    public void setAvailable(boolean available) {
+    public void addRating(double rating) {
+        if (rating < 1.0 || rating > 5.0) {
+            throw new IllegalArgumentException("Rating must be between 1 and 5");
+        }
+
+        double totalScore = this.averageRating * this.totalRatings;
+        totalScore += rating;
+
+        this.totalRatings++;
+        this.averageRating = totalScore / this.totalRatings;
+    }
+
+    public void incrementDeliveries() {
+        this.totalDeliveries++;
+    }
+    public void markBusy() {
+        this.available = false;
+    }
+    public void markAvailable() {
+        this.available = true;
+    }
+    public void setAvailability(boolean available) {
         this.available = available;
-    }
-
-    public void setRating(double rating) {
-        this.rating = rating;
-    }
-
-    public void setTotalDeliveries(int totalDeliveries) {
-        this.totalDeliveries = totalDeliveries;
     }
 }

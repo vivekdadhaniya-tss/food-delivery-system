@@ -3,7 +3,7 @@ package com.fooddeliveryapp.service.Impl;
 import com.fooddeliveryapp.exception.OrderProcessingException;
 import com.fooddeliveryapp.model.Order;
 import com.fooddeliveryapp.model.Payment;
-import com.fooddeliveryapp.model.type.PaymentMethod;
+import com.fooddeliveryapp.model.type.PaymentMode;
 import com.fooddeliveryapp.repository.PaymentRepository;
 import com.fooddeliveryapp.service.PaymentService;
 import com.fooddeliveryapp.strategy.Impl.PaymentStrategy;
@@ -28,7 +28,7 @@ public class PaymentServiceImpl implements PaymentService {
                 IdGenerator.nextPaymentId(),
                 order.getOrderNumber(),
                 order.getFinalAmount(),
-                PaymentMethod.valueOf(strategy.getPaymentType())
+                PaymentMode.valueOf(strategy.getPaymentType())
         );
         payment.markSuccess();
         paymentRepository.save(payment);

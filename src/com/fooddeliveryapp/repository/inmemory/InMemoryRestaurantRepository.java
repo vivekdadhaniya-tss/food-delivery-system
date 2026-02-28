@@ -1,6 +1,5 @@
 package com.fooddeliveryapp.repository.inmemory;
 
-import com.fooddeliveryapp.model.Restaurant;
 import com.fooddeliveryapp.repository.RestaurantRepository;
 
 import java.util.*;

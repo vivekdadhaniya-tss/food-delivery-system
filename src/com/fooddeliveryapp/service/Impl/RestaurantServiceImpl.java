@@ -2,8 +2,6 @@ package com.fooddeliveryapp.service.Impl;
 
 import com.fooddeliveryapp.exception.ResourceNotFoundException;
 import com.fooddeliveryapp.model.FoodItem;
-import com.fooddeliveryapp.model.Restaurant;
-import com.fooddeliveryapp.model.type.FoodCategory;
 import com.fooddeliveryapp.repository.RestaurantRepository;
 import com.fooddeliveryapp.service.RestaurantService;
 

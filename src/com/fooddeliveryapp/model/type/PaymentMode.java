@@ -1,6 +1,6 @@
 package com.fooddeliveryapp.model.type;
 
-public enum PaymentMethod {
+public enum PaymentMode {
     CASH,
     UPI
 }

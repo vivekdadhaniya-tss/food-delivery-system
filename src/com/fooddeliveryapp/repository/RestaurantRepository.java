@@ -1,7 +1,5 @@
 package com.fooddeliveryapp.repository;
 
-import com.fooddeliveryapp.model.Restaurant;
-
 import java.util.List;
 import java.util.Optional;
 

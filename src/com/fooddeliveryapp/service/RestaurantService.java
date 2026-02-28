@@ -1,8 +1,6 @@
 package com.fooddeliveryapp.service;
 
 import com.fooddeliveryapp.model.FoodItem;
-import com.fooddeliveryapp.model.Restaurant;
-import com.fooddeliveryapp.model.type.FoodCategory;
 
 import java.util.List;
 import java.util.Optional;

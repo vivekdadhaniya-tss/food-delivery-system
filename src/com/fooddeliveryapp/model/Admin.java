@@ -4,7 +4,7 @@ import com.fooddeliveryapp.model.type.Role;
 
 public class Admin extends User {
 
-    public Admin(int id, String name, String phone, String email, String password) {
+    public Admin(String id, String name, String phone, String email, String password) {
         super(id, name, phone, email, password);
     }
 

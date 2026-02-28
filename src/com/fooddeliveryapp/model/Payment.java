@@ -1,54 +1,71 @@
 package com.fooddeliveryapp.model;
 
-import com.fooddeliveryapp.model.type.PaymentMethod;
+import com.fooddeliveryapp.model.type.PaymentMode;
 import com.fooddeliveryapp.model.type.PaymentStatus;
 
 import java.time.LocalDateTime;
 
 public class Payment {
 
-    private final String paymentId;
-    private final String orderNumber;
+    private final String id;
+    private final String orderId;
     private final double amount;
-    private final PaymentMethod method;
+    private final PaymentMode mode;
 
     private PaymentStatus status;
+
     private final LocalDateTime createdAt;
+    private LocalDateTime paidAt;
 
-    public Payment(String paymentId,
-                   String orderNumber,
-                   double amount,
-                   PaymentMethod method) {
-
-        this.paymentId = paymentId;
-        this.orderNumber = orderNumber;
+    public Payment(String id, String orderId, double amount, PaymentMode mode) {
+        this.id = id;
+        this.orderId = orderId;
         this.amount = amount;
-        this.method = method;
-        this.status = PaymentStatus.INITIATED;
+        this.mode = mode;
+        this.status = PaymentStatus.PENDING;
         this.createdAt = LocalDateTime.now();
     }
 
-    // ===== Business Methods =====
 
+    // getters
+    public String getId() {
+        return id;
+    }
+    public String getOrderId() {
+        return orderId;
+    }
+    public double getAmount() {
+        return amount;
+    }
+    public PaymentMode getMode() {
+        return mode;
+    }
+    public PaymentStatus getStatus() {
+        return status;
+    }
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+    public LocalDateTime getPaidAt() {
+        return paidAt;
+    }
+
+
+    // business logic
     public void markSuccess() {
+        if (status != PaymentStatus.PENDING) {
+            throw new IllegalStateException("Payment already processed");
+        }
+
         this.status = PaymentStatus.SUCCESS;
+        this.paidAt = LocalDateTime.now();
     }
 
     public void markFailed() {
+        if (status != PaymentStatus.PENDING) {
+            throw new IllegalStateException("Payment already processed");
+        }
+
         this.status = PaymentStatus.FAILED;
     }
-
-    // ===== Getters =====
-
-    public String getPaymentId() { return paymentId; }
-
-    public String getOrderNumber() { return orderNumber; }
-
-    public double getAmount() { return amount; }
-
-    public PaymentMethod getMethod() { return method; }
-
-    public PaymentStatus getStatus() { return status; }
-
-    public LocalDateTime getCreatedAt() { return createdAt; }
 }

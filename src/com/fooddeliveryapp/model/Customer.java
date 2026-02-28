@@ -9,12 +9,11 @@ public class Customer extends User {
 
     private String address;
     private Cart activeCart;
-    private List<Order> orderHistory = new ArrayList<>();
 
-    public Customer(int id, String name, String phone, String email, String address, String password) {
+    public Customer(String id, String name, String phone, String email, String address, String password) {
         super(id, name, phone, email, password);
         this.address = address;
-        this.activeCart = new Cart(this);
+        this.activeCart = new Cart(id);
     }
 
     @Override
@@ -22,15 +21,6 @@ public class Customer extends User {
         return Role.CUSTOMER;
     }
 
-    public Cart getActiveCart() {
-        return activeCart;
-    }
-
-    public void addOrder(Order order) {
-        orderHistory.add(order);
-    }
-
-    public List<Order> getOrderHistory() {
-        return List.copyOf(orderHistory);
-    }
+    public String getAddress() { return address; }
+    public Cart getActiveCart() { return activeCart; }
 }

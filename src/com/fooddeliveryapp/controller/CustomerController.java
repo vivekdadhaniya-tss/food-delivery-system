@@ -2,14 +2,12 @@ package com.fooddeliveryapp.controller;
 
 import com.fooddeliveryapp.exception.FoodDeliveryException;
 import com.fooddeliveryapp.model.*;
-import com.fooddeliveryapp.model.type.FoodCategory;
 import com.fooddeliveryapp.service.*;
 import com.fooddeliveryapp.strategy.*;
 import com.fooddeliveryapp.strategy.Impl.PaymentStrategy;
 import com.fooddeliveryapp.util.InputUtil;
 
 import java.util.Optional;
-import java.util.Scanner;
 
 public class CustomerController {
     private final OrderService orderService;
@@ -92,7 +90,7 @@ public class CustomerController {
         if (choice == 1) {
             if (cart.isEmpty()) System.out.println("Cart is empty.");
             else {
-                cart.getItems().forEach(i -> System.out.println(i.getFoodItemName() + " x" + i.getQuantity() + " = ₹" + (i.getPriceAtPurchase() * i.getQuantity())));
+//                cart.getItems().forEach(i -> System.out.println(i.getFoodItemName() + " x" + i.getQuantity() + " = ₹" + (i.getPriceAtPurchase() * i.getQuantity())));
                 System.out.println("Total: ₹" + cart.getSubTotal());
             }
         } else if (choice == 2) {
@@ -100,10 +98,10 @@ public class CustomerController {
             Restaurant r = restaurantService.getRestaurantById(rId).orElseThrow(() -> new FoodDeliveryException("Not found"));
             String fId = InputUtil.getString("Food ID: ");
             FoodItem f = restaurantService.getMenuItemById(rId, fId).orElseThrow(() -> new FoodDeliveryException("Not found"));
-            cart.addItem(r, f.getId(), f.getName(), f.getPrice(), InputUtil.getInt("Quantity: "));
+//            cart.addItem(r, f.getId(), f.getName(), f.getPrice(), InputUtil.getInt("Quantity: "));
             System.out.println("Added to cart.");
         } else if (choice == 3) {
-            cart.removeItem(InputUtil.getString("Food ID to remove: "));
+//            cart.removeItem(InputUtil.getString("Food ID to remove: "));
             System.out.println("Removed.");
         }
     }
