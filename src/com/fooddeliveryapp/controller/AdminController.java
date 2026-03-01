@@ -2,7 +2,7 @@ package com.fooddeliveryapp.controller;
 
 import com.fooddeliveryapp.exception.FoodDeliveryException;
 import com.fooddeliveryapp.model.*;
-import com.fooddeliveryapp.model.type.*;
+import com.fooddeliveryapp.type.*;
 import com.fooddeliveryapp.service.*;
 import com.fooddeliveryapp.service.Impl.OrderServiceImpl;
 import com.fooddeliveryapp.strategy.*;

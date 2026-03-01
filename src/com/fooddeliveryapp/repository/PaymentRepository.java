@@ -10,8 +10,10 @@ public interface PaymentRepository {
     Payment save(Payment payment);
 
     Optional<Payment> findById(String paymentId);
-
-    Optional<Payment> findByOrderNumber(String orderNumber);
-
     List<Payment> findAll();
+    List<Payment> findByOrderId(String orderId);
+
+    void update(Payment payment);
+
+    boolean existsById(String paymentId);
 }

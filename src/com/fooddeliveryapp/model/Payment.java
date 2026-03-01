@@ -1,7 +1,7 @@
 package com.fooddeliveryapp.model;
 
-import com.fooddeliveryapp.model.type.PaymentMode;
-import com.fooddeliveryapp.model.type.PaymentStatus;
+import com.fooddeliveryapp.type.PaymentMode;
+import com.fooddeliveryapp.type.PaymentStatus;
 
 import java.time.LocalDateTime;
 
@@ -28,7 +28,7 @@ public class Payment {
 
 
     // getters
-    public String getId() {
+    public String getPaymentId() {
         return id;
     }
     public String getOrderId() {

@@ -2,39 +2,47 @@ package com.fooddeliveryapp.repository.inmemory;
 
 import com.fooddeliveryapp.model.DeliveryAgent;
 import com.fooddeliveryapp.repository.DeliveryAgentRepository;
+import com.fooddeliveryapp.repository.UserRepository;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class InMemoryDeliveryAgentRepository implements DeliveryAgentRepository {
 
-    private final Map<Integer, DeliveryAgent> agents = new HashMap<>();
+    private final UserRepository userRepository;
 
-    @Override
-    public DeliveryAgent save(DeliveryAgent agent) {
-        agents.put(agent.getId(), agent);
-        return agent;
+    public InMemoryDeliveryAgentRepository(UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
 
     @Override
-    public Optional<DeliveryAgent> findById(int id) {
-        return Optional.ofNullable(agents.get(id));
+    public Optional<DeliveryAgent> findById(String id) {
+        return userRepository.findById(id)
+                .filter(user -> user instanceof DeliveryAgent)
+                .map(user -> (DeliveryAgent) user);
+    }
+
+    @Override
+    public Optional<DeliveryAgent> findByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .filter(user -> user instanceof DeliveryAgent)
+                .map(user -> (DeliveryAgent) user);
     }
 
     @Override
     public List<DeliveryAgent> findAll() {
-        return new ArrayList<>(agents.values());
+        return userRepository.findAll()
+                .stream()
+                .filter(user -> user instanceof DeliveryAgent)
+                .map(user -> (DeliveryAgent) user)
+                .collect(Collectors.toList());
     }
 
     @Override
     public List<DeliveryAgent> findAvailableAgents() {
-        return agents.values()
+        return findAll()
                 .stream()
                 .filter(DeliveryAgent::isAvailable)
-                .toList();
-    }
-
-    @Override
-    public void deleteById(int id) {
-        agents.remove(id);
+                .collect(Collectors.toList());
     }
 }

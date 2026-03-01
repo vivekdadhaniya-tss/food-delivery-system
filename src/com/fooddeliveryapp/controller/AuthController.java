@@ -1,7 +1,7 @@
 package com.fooddeliveryapp.controller;
 
 import com.fooddeliveryapp.model.User;
-import com.fooddeliveryapp.model.type.Role;
+import com.fooddeliveryapp.type.Role;
 import com.fooddeliveryapp.service.AuthService;
 import com.fooddeliveryapp.util.InputUtil;
 

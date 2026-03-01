@@ -1,6 +1,5 @@
 package com.fooddeliveryapp.service.Impl;
 
-import com.fooddeliveryapp.exception.CartOperationException;
 import com.fooddeliveryapp.model.Cart;
 import com.fooddeliveryapp.model.CartItem;
 

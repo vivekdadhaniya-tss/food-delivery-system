@@ -1,10 +1,7 @@
 package com.fooddeliveryapp.service.Impl;
 
-import com.fooddeliveryapp.exception.CartOperationException;
-import com.fooddeliveryapp.exception.OrderProcessingException;
-import com.fooddeliveryapp.exception.ResourceNotFoundException;
 import com.fooddeliveryapp.model.*;
-import com.fooddeliveryapp.model.type.OrderStatus;
+import com.fooddeliveryapp.type.OrderStatus;
 import com.fooddeliveryapp.repository.DeliveryAgentRepository;
 import com.fooddeliveryapp.repository.OrderRepository;
 import com.fooddeliveryapp.repository.UserRepository;

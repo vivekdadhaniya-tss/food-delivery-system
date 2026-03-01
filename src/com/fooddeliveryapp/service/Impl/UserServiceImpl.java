@@ -1,9 +1,8 @@
 package com.fooddeliveryapp.service.Impl;
 
-import com.fooddeliveryapp.exception.UserAlreadyExistsException;
 import com.fooddeliveryapp.model.DeliveryAgent;
 import com.fooddeliveryapp.model.User;
-import com.fooddeliveryapp.model.type.Role;
+import com.fooddeliveryapp.type.Role;
 import com.fooddeliveryapp.repository.UserRepository;
 import com.fooddeliveryapp.service.UserService;
 

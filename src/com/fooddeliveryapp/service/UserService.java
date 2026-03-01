@@ -2,7 +2,7 @@ package com.fooddeliveryapp.service;
 
 import com.fooddeliveryapp.model.DeliveryAgent;
 import com.fooddeliveryapp.model.User;
-import com.fooddeliveryapp.model.type.Role;
+import com.fooddeliveryapp.type.Role;
 
 import java.util.List;
 import java.util.Optional;

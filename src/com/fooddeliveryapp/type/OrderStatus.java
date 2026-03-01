@@ -1,4 +1,4 @@
-package com.fooddeliveryapp.model.type;
+package com.fooddeliveryapp.type;
 
 public enum OrderStatus {
     CREATED,

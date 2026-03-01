@@ -125,7 +125,7 @@ public class CustomerController {
 
     private void trackOrders(Customer customer) {
         orderService.getOrdersByCustomer(customer.getId()).stream()
-                .filter(o -> o.getStatus() != com.fooddeliveryapp.model.type.OrderStatus.DELIVERED && o.getStatus() != com.fooddeliveryapp.model.type.OrderStatus.CANCELLED)
+                .filter(o -> o.getStatus() != com.fooddeliveryapp.type.OrderStatus.DELIVERED && o.getStatus() != com.fooddeliveryapp.type.OrderStatus.CANCELLED)
                 .forEach(o -> System.out.println("Order: " + o.getOrderNumber() + " | Status: " + o.getStatus() + " | Agent ID: " + (o.getAssignedAgentId() != null ? o.getAssignedAgentId() : "Unassigned")));
     }
 

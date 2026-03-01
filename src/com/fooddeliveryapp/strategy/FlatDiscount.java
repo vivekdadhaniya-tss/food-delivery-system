@@ -15,12 +15,7 @@ public class FlatDiscount implements DiscountStrategy {
 
     @Override
     public double calculateDiscount(Order order) {
-        double subTotal = order.getItems()
-                .stream()
-                .mapToDouble(i -> i.getPriceAtPurchase() * i.getQuantity())
-                .sum();
-
-        if (subTotal >= threshold) {
+        if (order.getSubTotal() >= threshold) {
             return discountAmount;
         }
         return 0;

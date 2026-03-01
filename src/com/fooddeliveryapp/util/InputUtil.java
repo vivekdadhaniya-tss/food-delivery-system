@@ -1,119 +1,96 @@
 package com.fooddeliveryapp.util;
 
-import java.io.File;
-import java.util.Scanner;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
-public class InputUtil {
+import static com.fooddeliveryapp.util.AppConstants.*;
 
-    private static Scanner scan;
-    private static boolean readingFromFile = false;
-
-    static {
-        try {
-            File file = new File("input.txt");
-            if (file.exists()) {
-                scan = new Scanner(file);
-                readingFromFile = true;
-                System.out.println("--- Reading inputs from input.txt ---");
-            } else {
-                scan = new Scanner(System.in);
-            }
-        } catch (Exception e) {
-            scan = new Scanner(System.in);
-        }
-    }
+public final class InputUtil {
 
     private InputUtil() {}
 
-    // Safer method to switch scanners
-    private static String getNextLine() {
-        if (readingFromFile) {
-            if (scan.hasNextLine()) {
-                String line = scan.nextLine();
-                System.out.println(line);
-                return line;
-            } else {
-                // File is empty, switch to console
-                System.out.println("\n--- Finished reading from input.txt. Switching to manual input. ---");
-                scan.close();
-                scan = new Scanner(System.in);
-                readingFromFile = false;
-            }
+    // ==========================
+    // Common Null / Blank Checks
+    // ==========================
+
+    public static String requireNonBlank(String value, String fieldName) {
+        Objects.requireNonNull(value, fieldName + " cannot be null");
+
+        if (value.isBlank()) {
+            throw new IllegalArgumentException(fieldName + " cannot be empty");
         }
-        // Read from console
-        return scan.nextLine();
+
+        return value.trim();
     }
 
-    public static int getInt(String prompt) {
-        int value;
-        while (true) {
-            System.out.print(prompt);
-            try {
-                value = Integer.parseInt(getNextLine());
-                break;
-            } catch (NumberFormatException e) {
-                System.out.println("Invalid integer. Please try again.");
-            }
+    public static void requirePositive(double value, String fieldName) {
+        if (value <= 0) {
+            throw new IllegalArgumentException(fieldName + " must be greater than zero");
         }
-        return value;
     }
 
-    public static double getDouble(String prompt) {
-        double value;
-        while (true) {
-            System.out.print(prompt);
-            try {
-                value = Double.parseDouble(getNextLine());
-                break;
-            } catch (NumberFormatException e) {
-                System.out.println("Invalid number. Please try again.");
-            }
+    public static void requireNonNegative(double value, String fieldName) {
+        if (value < 0) {
+            throw new IllegalArgumentException(fieldName + " cannot be negative");
         }
-        return value;
     }
 
-    public static String getString(String prompt) {
-        String value;
-        while (true) {
-            System.out.print(prompt);
-            value = getNextLine().trim();
-            if (!value.isEmpty()) {
-                break;
-            } else {
-                System.out.println("Input cannot be empty. Please try again.");
-            }
+    public static void requirePositive(int value, String fieldName) {
+        if (value <= 0) {
+            throw new IllegalArgumentException(fieldName + " must be greater than zero");
         }
-        return value;
     }
 
-    public static String getStringPattern(String prompt, String regex, String errorMsg) {
-        String value;
-        while (true) {
-            System.out.print(prompt);
-            value = getNextLine().trim();
-            if (java.util.regex.Pattern.matches(regex, value)) {
-                break;
-            } else {
-                System.out.println(errorMsg);
-            }
+    // ==========================
+    // Email Validation
+    // ==========================
+
+    public static String validateEmail(String email) {
+        email = requireNonBlank(email, "Email");
+
+        if (!EMAIL_PATTERN.matcher(email).matches()) {
+            throw new IllegalArgumentException("Invalid email format");
         }
-        return value;
+
+        return email;
     }
 
-    public static int getChoice(String prompt, int min, int max) {
-        int choice;
-        while (true) {
-            choice = getInt(prompt);
-            if (choice >= min && choice <= max) break;
-            System.out.println("Choice must be between " + min + " and " + max);
+    // ==========================
+    // Phone Validation (India simple)
+    // ==========================
+
+    public static String validatePhone(String phone) {
+        phone = requireNonBlank(phone, "Phone");
+
+        if (!PHONE_PATTERN.matcher(phone).matches()) {
+            throw new IllegalArgumentException("Invalid phone number");
         }
-        return choice;
+
+        return phone;
     }
 
-    public static String getUPI(String prompt) {
-        return getStringPattern(prompt,
-                "[\\w.-]+@[\\w]+",
-                "Invalid UPI ID. Format example: abc@upi");
+    // ==========================
+    // Password Validation
+    // ==========================
+
+    public static String validatePassword(String password) {
+        password = requireNonBlank(password, "Password");
+
+        if (password.length() < PASSWORD_MIN_LENGTH ) {
+            throw new IllegalArgumentException("Password must be at least 6 characters");
+        }
+
+        return password;
     }
+
+    // ==========================
+    // Rating Validation
+    // ==========================
+
+    public static void validateRating(double rating) {
+        if (rating < 1.0 || rating > 5.0) {
+            throw new IllegalArgumentException("Rating must be between 1 and 5");
+        }
+    }
+
 }

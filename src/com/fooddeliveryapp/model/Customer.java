@@ -1,9 +1,6 @@
 package com.fooddeliveryapp.model;
 
-import com.fooddeliveryapp.model.type.Role;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.fooddeliveryapp.type.Role;
 
 public class Customer extends User {
 

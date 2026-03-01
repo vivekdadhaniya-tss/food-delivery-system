@@ -1,7 +1,7 @@
 package com.fooddeliveryapp.service;
 
 import com.fooddeliveryapp.model.Order;
-import com.fooddeliveryapp.model.type.OrderStatus;
+import com.fooddeliveryapp.type.OrderStatus;
 import com.fooddeliveryapp.model.DeliveryAgent;
 import com.fooddeliveryapp.strategy.Impl.PaymentStrategy;
 

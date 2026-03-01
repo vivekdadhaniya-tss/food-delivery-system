@@ -15,10 +15,7 @@ public class PercentageDiscount implements DiscountStrategy {
 
     @Override
     public double calculateDiscount(Order order) {
-        double subTotal = order.getItems()
-                .stream()
-                .mapToDouble(i -> i.getPriceAtPurchase() * i.getQuantity())
-                .sum();
+        double subTotal = order.getSubTotal();
 
         if (subTotal >= threshold) {
             return subTotal * (percentage / 100);

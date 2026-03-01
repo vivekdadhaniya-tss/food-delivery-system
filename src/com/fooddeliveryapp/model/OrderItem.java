@@ -1,8 +1,5 @@
 package com.fooddeliveryapp.model;
 
-import java.math.BigDecimal;
-import java.util.Objects;
-
 public class OrderItem {
 
     private final String menuItemId;

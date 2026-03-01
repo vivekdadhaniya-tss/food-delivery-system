@@ -1,8 +1,6 @@
 package com.fooddeliveryapp.service.Impl;
 
-import com.fooddeliveryapp.exception.ResourceNotFoundException;
 import com.fooddeliveryapp.model.FoodItem;
-import com.fooddeliveryapp.repository.RestaurantRepository;
 import com.fooddeliveryapp.service.RestaurantService;
 
 import java.util.*;

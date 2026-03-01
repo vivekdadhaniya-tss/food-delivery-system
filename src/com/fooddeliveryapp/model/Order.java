@@ -1,12 +1,11 @@
 package com.fooddeliveryapp.model;
 
-import com.fooddeliveryapp.model.type.OrderStatus;
+import com.fooddeliveryapp.type.OrderStatus;
+import com.fooddeliveryapp.util.AppConstants;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 public class Order {
 
@@ -29,7 +28,7 @@ public class Order {
     private LocalDateTime updatedAt;
     private LocalDateTime deliveredAt;
 
-    public Order(String orderNumber, String customerId, List<OrderItem> items, double subTotal, double discountAmount, double taxAmount, double deliveryFee, double finalAmount) {
+    public Order(String orderNumber, String customerId, List<OrderItem> items, double subTotal, double discountAmount) {
 
         this.orderNumber = orderNumber;
         this.customerId = customerId;
@@ -37,9 +36,9 @@ public class Order {
 
         this.subTotal = subTotal;
         this.discountAmount = discountAmount;
-        this.taxAmount = taxAmount;
-        this.deliveryFee = deliveryFee;
-        this.finalAmount = finalAmount;
+        this.deliveryFee = AppConstants.DEFAULT_DELIVERY_FEE;
+
+        calculateAmounts();
 
         this.status = OrderStatus.CREATED;
 
@@ -47,6 +46,10 @@ public class Order {
         this.updatedAt = LocalDateTime.now();
     }
 
+    public void calculateAmounts() {
+        this.taxAmount = (subTotal * AppConstants.DEFAULT_TAX_PERCENT) / 100;
+        this.finalAmount = subTotal - discountAmount + taxAmount + deliveryFee;
+    }
 
     // getters
     public String getOrderNumber() {

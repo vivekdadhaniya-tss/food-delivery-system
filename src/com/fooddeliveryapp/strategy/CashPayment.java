@@ -1,5 +1,6 @@
 package com.fooddeliveryapp.strategy;
 
+import com.fooddeliveryapp.type.PaymentMode;
 import com.fooddeliveryapp.strategy.Impl.PaymentStrategy;
 
 public class CashPayment implements PaymentStrategy {
@@ -11,7 +12,7 @@ public class CashPayment implements PaymentStrategy {
     }
 
     @Override
-    public String getPaymentType() {
-        return "CASH";
+    public PaymentMode getPaymentType() {
+        return PaymentMode.CASH;
     }
 }

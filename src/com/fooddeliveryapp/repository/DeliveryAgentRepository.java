@@ -7,13 +7,11 @@ import java.util.Optional;
 
 public interface DeliveryAgentRepository {
 
-    DeliveryAgent save(DeliveryAgent agent);
+    Optional<DeliveryAgent> findById(String id);
 
-    Optional<DeliveryAgent> findById(int id);
+    Optional<DeliveryAgent> findByEmail(String email);
 
     List<DeliveryAgent> findAll();
 
     List<DeliveryAgent> findAvailableAgents();
-
-    void deleteById(int id);
 }

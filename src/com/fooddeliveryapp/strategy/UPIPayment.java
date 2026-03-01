@@ -1,5 +1,6 @@
 package com.fooddeliveryapp.strategy;
 
+import com.fooddeliveryapp.type.PaymentMode;
 import com.fooddeliveryapp.strategy.Impl.PaymentStrategy;
 
 public class UPIPayment implements PaymentStrategy {
@@ -16,12 +17,11 @@ public class UPIPayment implements PaymentStrategy {
         System.out.println("Processing UPI payment of ₹" + amount);
         System.out.println("UPI ID: " + upiId);
 
-        // simulate success
         return true;
     }
 
     @Override
-    public String getPaymentType() {
-        return "UPI";
+    public PaymentMode getPaymentType() {
+        return PaymentMode.UPI;
     }
 }

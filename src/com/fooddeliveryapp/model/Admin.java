@@ -1,6 +1,6 @@
 package com.fooddeliveryapp.model;
 
-import com.fooddeliveryapp.model.type.Role;
+import com.fooddeliveryapp.type.Role;
 
 public class Admin extends User {
 

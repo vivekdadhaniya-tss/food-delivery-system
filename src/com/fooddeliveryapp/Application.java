@@ -3,7 +3,7 @@ package com.fooddeliveryapp;
 import com.fooddeliveryapp.controller.*;
 import com.fooddeliveryapp.exception.FoodDeliveryException;
 import com.fooddeliveryapp.model.User;
-import com.fooddeliveryapp.model.type.Role;
+import com.fooddeliveryapp.type.Role;
 import com.fooddeliveryapp.repository.*;
 import com.fooddeliveryapp.repository.inmemory.*;
 import com.fooddeliveryapp.service.*;

@@ -10,10 +10,10 @@ public class MenuItem {
 
     public MenuItem(String id, String name, double price, String categoryId) {
 
-        this.id = validateId(id);
-        this.name = validateName(name);
-        this.price = validatePrice(price);
-        this.categoryId = validateCategory(categoryId);
+        this.id = id;
+        this.name = name;
+        this.price = price;
+        this.categoryId = categoryId;
         this.available = true;
     }
 
@@ -36,42 +36,16 @@ public class MenuItem {
 
 
     public void updatePrice(double newPrice) {
-        this.price = validatePrice(newPrice);
+        this.price = newPrice;
     }
     public void rename(String newName) {
-        this.name = validateName(newName);
+        this.name = newName;
     }
     public void changeAvailability(boolean status) {
         this.available = status;
     }
     public void changeCategory(String newCategoryId) {
-        this.categoryId = validateCategory(newCategoryId);
+        this.categoryId = newCategoryId;
     }
 
-
-
-    private String validateId(String id) {
-        if (id == null || id.isBlank()) {
-            throw new IllegalArgumentException("MenuItem id cannot be empty");
-        }
-        return id;
-    }
-    private String validateName(String name) {
-        if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("MenuItem name cannot be empty");
-        }
-        return name.trim();
-    }
-    private double validatePrice(double price) {
-        if (price <= 0) {
-            throw new IllegalArgumentException("Price must be greater than zero");
-        }
-        return price;
-    }
-    private String validateCategory(String categoryId) {
-        if (categoryId == null || categoryId.isBlank()) {
-            throw new IllegalArgumentException("CategoryId cannot be empty");
-        }
-        return categoryId;
-    }
 }
