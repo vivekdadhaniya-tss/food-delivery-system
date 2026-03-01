@@ -1,0 +1,81 @@
+package com.fooddeliveryapp.repository.inmemory;
+
+import com.fooddeliveryapp.model.Category;
+import com.fooddeliveryapp.repository.CategoryRepository;
+
+import java.util.*;
+
+public class InMemoryCategoryRepository implements CategoryRepository {
+
+    private final Map<String, Category> store = new HashMap<>();
+    private final Map<String, String> nameIndex = new HashMap<>();
+
+    @Override
+    public Category save(Category category) {
+        if(category == null)
+            throw new IllegalArgumentException("category cannot be null");
+
+        store.put(category.getId(), category);
+
+        if(category.getName() != null) {
+            nameIndex.put(category.getName().toLowerCase(), category.getId());
+        }
+        return category;
+    }
+
+    @Override
+    public Optional<Category> findById(String id) {
+        if(id == null || id.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(store.get(id));
+    }
+
+    @Override
+    public Optional<Category> findByName(String name) {
+        if(name == null || name.isEmpty()) {
+            return Optional.empty();
+        }
+        String id  = nameIndex.get(name.toLowerCase());
+        if(id == null) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(store.get(id));
+    }
+
+    @Override
+    public List<Category> findAll() {
+        return new ArrayList<>(store.values());
+    }
+
+    @Override
+    public List<Category> findAllActive() {
+        return store.values().stream()
+                .filter(Category::isActive)
+                .toList();
+    }
+
+    @Override
+    public List<Category> findAllInactive() {
+        return store.values().stream()
+                .filter(c -> !c.isActive())
+                .toList();
+    }
+
+    @Override
+    public void deleteById(String id) {
+        Category category = store.get(id);
+        if(category != null) {
+            category.deactivate();
+            nameIndex.remove(category.getName().toLowerCase());
+        }
+    }
+
+    @Override
+    public boolean existsByName(String name) {
+        if(name == null || name.isEmpty()) {
+            return false;
+        }
+        return nameIndex.containsKey(name.toLowerCase());
+    }
+}

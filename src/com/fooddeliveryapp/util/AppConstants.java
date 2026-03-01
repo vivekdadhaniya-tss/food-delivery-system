@@ -1,0 +1,28 @@
+package com.fooddeliveryapp.util;
+
+import java.math.BigDecimal;
+import java.util.regex.Pattern;
+
+public final class AppConstants {
+
+    private AppConstants() {
+        // Prevent instantiation
+    }
+
+    public static final double DEFAULT_DELIVERY_FEE = 50;
+    public static final double DEFAULT_TAX_PERCENT = 5;
+    public static final double MIN_ORDER_FOR_FLAT_DISCOUNT = 500;
+
+    public static final String DEFAULT_ADMIN_EMAIL = "admin@food.com";
+    public static final String DEFAULT_ADMIN_PASSWORD = "admin123";
+
+    public static final int MAX_QUANTITY = 100;
+    public static final int MIN_QUANTITY = 1;
+    public static final int PASSWORD_MIN_LENGTH = 4;
+
+    public static final Pattern EMAIL_PATTERN =
+            Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
+
+    public static final Pattern PHONE_PATTERN =
+            Pattern.compile("^[6-9]\\d{9}$");
+}
