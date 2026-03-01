@@ -9,6 +9,7 @@ import com.fooddeliveryapp.service.MenuService;
 import com.fooddeliveryapp.type.ErrorType;
 import com.fooddeliveryapp.type.IdType;
 import com.fooddeliveryapp.util.IdGenerator;
+import com.fooddeliveryapp.util.InputUtil;
 
 import java.util.List;
 import java.util.Optional;
@@ -63,10 +64,16 @@ public class MenuServiceImpl implements MenuService {
     // --- MenuItem Management ---
     @Override
     public MenuItem addMenuItem(String name, double price, String categoryId) {
+        InputUtil.requireNonBlank(name, "Name");
+        InputUtil.requirePositive(price, "Price");
+
         if (!categoryRepository.existsById(categoryId)) {
             throw new FoodDeliveryException(ErrorType.RESOURCE_NOT_FOUND, "Category does not exist");
         }
-        MenuItem item = new MenuItem(IdGenerator.generate(IdType.MENU_ITEM), name, price, categoryId);
+
+        // Generate ID LAST
+        String id = IdGenerator.generate(IdType.MENU_ITEM);
+        MenuItem item = new MenuItem(id, name, price, categoryId);
         return menuItemRepository.save(item);
     }
 

@@ -2,12 +2,16 @@ package com.fooddeliveryapp.service.Impl;
 
 import com.fooddeliveryapp.exception.FoodDeliveryException;
 import com.fooddeliveryapp.model.DeliveryAgent;
+import com.fooddeliveryapp.model.Order;
 import com.fooddeliveryapp.repository.DeliveryAgentRepository;
 import com.fooddeliveryapp.repository.UserRepository;
 import com.fooddeliveryapp.service.DeliveryService;
 import com.fooddeliveryapp.service.OrderService;
 import com.fooddeliveryapp.type.ErrorType;
+import com.fooddeliveryapp.type.OrderStatus;
 
+import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 
 public class DeliveryServiceImpl implements DeliveryService {
@@ -29,9 +33,8 @@ public class DeliveryServiceImpl implements DeliveryService {
         if (agentOpt.isPresent()) {
             DeliveryAgent agent = agentOpt.get();
             agent.markBusy();
-            userRepository.save(agent); // Save agent state
-
-            orderService.assignDeliveryAgent(orderId, agent.getId()); // Update order
+            userRepository.save(agent);
+            orderService.assignDeliveryAgent(orderId, agent.getId());
         }
         return agentOpt;
     }
@@ -45,7 +48,7 @@ public class DeliveryServiceImpl implements DeliveryService {
     public void markOrderDelivered(String orderId) {
         orderService.markOrderDelivered(orderId);
 
-        // Free up the agent
+        // 1. Free up the agent who just delivered the order
         String agentId = orderService.getOrderById(orderId).get().getDeliveryAgentId();
         if (agentId != null) {
             DeliveryAgent agent = deliveryAgentRepository.findById(agentId).orElseThrow();
@@ -53,14 +56,38 @@ public class DeliveryServiceImpl implements DeliveryService {
             agent.incrementDeliveries();
             userRepository.save(agent);
         }
+
+        // 2. MAJOR FIX: Instantly check if there are pending orders waiting for an agent!
+        autoAssignPendingOrders();
     }
 
     @Override
     public void rateDeliveryAgent(String agentId, double rating) {
         DeliveryAgent agent = deliveryAgentRepository.findById(agentId)
                 .orElseThrow(() -> new FoodDeliveryException(ErrorType.RESOURCE_NOT_FOUND, "Agent not found"));
-
         agent.addRating(rating);
         userRepository.save(agent);
+    }
+
+    // --- The Queue Logic ---
+    private void autoAssignPendingOrders() {
+        // Find all PAID orders that don't have an agent yet, sorted by oldest first
+        List<Order> pendingOrders = orderService.getOngoingOrders().stream()
+                .filter(o -> o.getStatus() == OrderStatus.PAID && o.getDeliveryAgentId() == null)
+                .sorted(Comparator.comparing(Order::getCreatedAt))
+                .toList();
+
+        for (Order order : pendingOrders) {
+            Optional<DeliveryAgent> agentOpt = deliveryAgentRepository.findAvailableAgents().stream().findFirst();
+            if (agentOpt.isPresent()) {
+                DeliveryAgent agent = agentOpt.get();
+                agent.markBusy();
+                userRepository.save(agent);
+                orderService.assignDeliveryAgent(order.getOrderNumber(), agent.getId());
+                System.out.println("🔄 [SYSTEM] Auto-assigned pending order " + order.getOrderNumber() + " to Agent " + agent.getName());
+            } else {
+                break; // No more agents available, stop trying
+            }
+        }
     }
 }

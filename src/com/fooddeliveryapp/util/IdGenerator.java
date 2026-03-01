@@ -18,6 +18,6 @@ public final class IdGenerator {
     private IdGenerator() {}
 
     public static String generate(IdType type) {
-        return type.getPrefix() + counters.get(type).incrementAndGet();
+        return type.getPrefix() + counters.get(type).getAndIncrement();
     }
 }

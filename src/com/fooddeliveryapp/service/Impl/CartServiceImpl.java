@@ -29,7 +29,6 @@ public class CartServiceImpl implements CartService {
         if (!(user instanceof Customer)) {
             throw new FoodDeliveryException(ErrorType.CART_ERROR, "Invalid operation: User is not a customer");
         }
-
         return ((Customer) user).getActiveCart();
     }
 
@@ -40,13 +39,17 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public void addItem(String customerId, String menuItemId, int quantity) {
+        if (quantity <= 0) {
+            throw new FoodDeliveryException(ErrorType.CART_ERROR, "Quantity must be at least 1");
+        }
+
         Cart cart = getCustomerCart(customerId);
 
         MenuItem menuItem = menuItemRepository.findById(menuItemId)
-                .orElseThrow(() -> new FoodDeliveryException(ErrorType.RESOURCE_NOT_FOUND, "Menu item not found"));
+                .orElseThrow(() -> new FoodDeliveryException(ErrorType.RESOURCE_NOT_FOUND, "Menu item not found: " + menuItemId));
 
         if (!menuItem.isAvailable()) {
-            throw new FoodDeliveryException(ErrorType.CART_ERROR, "Item is currently unavailable");
+            throw new FoodDeliveryException(ErrorType.CART_ERROR, menuItem.getName() + "Item is currently unavailable");
         }
 
         cart.getItems().stream()
