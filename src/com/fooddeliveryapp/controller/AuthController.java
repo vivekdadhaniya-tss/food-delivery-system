@@ -1,47 +1,53 @@
 package com.fooddeliveryapp.controller;
 
+import com.fooddeliveryapp.exception.FoodDeliveryException;
 import com.fooddeliveryapp.model.User;
-import com.fooddeliveryapp.type.Role;
 import com.fooddeliveryapp.service.AuthService;
+import com.fooddeliveryapp.util.ConsoleInput;
 import com.fooddeliveryapp.util.InputUtil;
 
 public class AuthController {
-
     private final AuthService authService;
 
     public AuthController(AuthService authService) {
         this.authService = authService;
     }
 
-    public void register(int choice) {
-        String name = InputUtil.getString("Name: ");
-        String phone = InputUtil.getStringPattern("Phone: ", "\\d{10}", "Phone must be 10 digits");
-        String email = InputUtil.getStringPattern("Email: ", "[\\w._%+-]+@[\\w.-]+\\.[a-zA-Z]{2,}", "Invalid email");
-        String password = InputUtil.getString("Password: ");
+    public User login() {
+        System.out.println("\n--- 🔐 LOGIN ---");
+        String email = ConsoleInput.getString("Email: ");
+        String password = ConsoleInput.getString("Password: ");
+        return authService.login(email, password);
+    }
 
-        switch (choice) {
-            case 1 -> {
-                String addtress = InputUtil.getString("Address: ");
-                authService.registerCustomer(name,phone,email,password,addtress);
-                System.out.println("Customer registered successfully!");
-            }
-            case 2 -> {
-                authService.registerUser(name, phone, email, password, Role.DELIVERY_AGENT);
-                System.out.println("Delivery Agent registered successfully!");
-            }
-            case 3 -> {
-                authService.registerUser(name, phone, email, password, Role.ADMIN);
-                System.out.println("Admin registered successfully!");
-            }
-            default -> System.out.println("Invalid registration choice!");
+    public void registerCustomer() {
+        System.out.println("\n--- 📝 REGISTER CUSTOMER ---");
+        try {
+            String name = InputUtil.requireNonBlank(ConsoleInput.getString("Name: "), "Name");
+            String phone = InputUtil.validatePhone(ConsoleInput.getString("Phone (10 digits): "));
+            String email = InputUtil.validateEmail(ConsoleInput.getString("Email: "));
+            String password = InputUtil.validatePassword(ConsoleInput.getString("Password (min 4 chars): "));
+            String address = InputUtil.requireNonBlank(ConsoleInput.getString("Address: "), "Address");
+
+            authService.registerCustomer(name, phone, email, password, address);
+            System.out.println("✅ Customer registered successfully!");
+        } catch (IllegalArgumentException | FoodDeliveryException e) {
+            System.out.println("❌ Registration Failed: " + e.getMessage());
         }
     }
 
-    public User login() {
-        String email = InputUtil.getStringPattern("Email: ", "[\\w._%+-]+@[\\w.-]+\\.[a-zA-Z]{2,}", "Invalid email");
-        String password = InputUtil.getString("Password: ");
-        User user = authService.login(email, password);
-        System.out.println("Logged in as: " + user.getRole());
-        return user;
+    public void registerDeliveryAgent() {
+        System.out.println("\n--- 🛵 REGISTER DELIVERY AGENT ---");
+        try {
+            String name = InputUtil.requireNonBlank(ConsoleInput.getString("Name: "), "Name");
+            String phone = InputUtil.validatePhone(ConsoleInput.getString("Phone (10 digits): "));
+            String email = InputUtil.validateEmail(ConsoleInput.getString("Email: "));
+            String password = InputUtil.validatePassword(ConsoleInput.getString("Password (min 4 chars): "));
+
+            authService.registerDeliveryAgent(name, phone, email, password);
+            System.out.println("✅ Delivery Agent registered successfully!");
+        } catch (IllegalArgumentException | FoodDeliveryException e) {
+            System.out.println("❌ Registration Failed: " + e.getMessage());
+        }
     }
 }

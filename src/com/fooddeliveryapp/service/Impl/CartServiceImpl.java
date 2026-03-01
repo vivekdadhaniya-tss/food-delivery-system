@@ -1,44 +1,99 @@
 package com.fooddeliveryapp.service.Impl;
 
+import com.fooddeliveryapp.exception.FoodDeliveryException;
 import com.fooddeliveryapp.model.Cart;
 import com.fooddeliveryapp.model.CartItem;
+import com.fooddeliveryapp.model.Customer;
+import com.fooddeliveryapp.model.MenuItem;
+import com.fooddeliveryapp.model.User;
+import com.fooddeliveryapp.repository.MenuItemRepository;
+import com.fooddeliveryapp.repository.UserRepository;
+import com.fooddeliveryapp.service.CartService;
+import com.fooddeliveryapp.type.ErrorType;
 
-public class CartServiceImpl {
+public class CartServiceImpl implements CartService {
 
-    public void addItem(Cart cart, CartItem cartItem) {
+    private final UserRepository userRepository;
+    private final MenuItemRepository menuItemRepository;
+
+    public CartServiceImpl(UserRepository userRepository, MenuItemRepository menuItemRepository) {
+        this.userRepository = userRepository;
+        this.menuItemRepository = menuItemRepository;
+    }
+
+    // Helper method with strict type checking
+    private Cart getCustomerCart(String customerId) {
+        User user = userRepository.findById(customerId)
+                .orElseThrow(() -> new FoodDeliveryException(ErrorType.RESOURCE_NOT_FOUND, "Customer not found"));
+
+        if (!(user instanceof Customer)) {
+            throw new FoodDeliveryException(ErrorType.CART_ERROR, "Invalid operation: User is not a customer");
+        }
+
+        return ((Customer) user).getActiveCart();
+    }
+
+    @Override
+    public Cart getCart(String customerId) {
+        return getCustomerCart(customerId);
+    }
+
+    @Override
+    public void addItem(String customerId, String menuItemId, int quantity) {
+        Cart cart = getCustomerCart(customerId);
+
+        MenuItem menuItem = menuItemRepository.findById(menuItemId)
+                .orElseThrow(() -> new FoodDeliveryException(ErrorType.RESOURCE_NOT_FOUND, "Menu item not found"));
+
+        if (!menuItem.isAvailable()) {
+            throw new FoodDeliveryException(ErrorType.CART_ERROR, "Item is currently unavailable");
+        }
+
         cart.getItems().stream()
-                .filter(item -> item.getMenuItemId().equals(cartItem.getMenuItemId()))
+                .filter(item -> item.getMenuItemId().equals(menuItemId))
                 .findFirst()
                 .ifPresentOrElse(
-                        existingItem -> existingItem.setQuantity(existingItem.getQuantity() + cartItem.getQuantity()),
-                        () -> cart.getItems().add(cartItem)
+                        existingItem -> existingItem.setQuantity(existingItem.getQuantity() + quantity),
+                        () -> cart.getItems().add(new CartItem(menuItem.getId(), menuItem.getName(), menuItem.getPrice(), quantity))
                 );
     }
 
-    public void removeItem(Cart cart, String menuItemId) {
-        cart.getItems().removeIf(item -> item.getMenuItemId().equals(menuItemId));
+    @Override
+    public void removeItem(String customerId, String menuItemId) {
+        Cart cart = getCustomerCart(customerId);
+        boolean removed = cart.getItems().removeIf(item -> item.getMenuItemId().equals(menuItemId));
+
+        if (!removed) {
+            throw new FoodDeliveryException(ErrorType.CART_ERROR, "Item not found in cart");
+        }
     }
 
-    public void updateItemQuantity(Cart cart, String menuItemId, int quantity) {
+    @Override
+    public void updateItemQuantity(String customerId, String menuItemId, int quantity) {
+        Cart cart = getCustomerCart(customerId);
         cart.getItems().stream()
                 .filter(item -> item.getMenuItemId().equals(menuItemId))
                 .findFirst()
                 .ifPresentOrElse(
                         existing -> existing.setQuantity(quantity),
-                        () -> { throw new CartOperationException("Item not found in cart"); }
+                        () -> { throw new FoodDeliveryException(ErrorType.CART_ERROR, "Item not found in cart"); }
                 );
     }
 
-    public void clearCart(Cart cart) {
-        cart.clear();
+    @Override
+    public void clearCart(String customerId) {
+        getCustomerCart(customerId).clear();
     }
 
-    public double getTotalPrice(Cart cart) {
-        return cart.getSubTotal();
+    @Override
+    public double getTotalPrice(String customerId) {
+        // Uses the getSubTotal() method already built in the Cart model --> Delegation
+        return getCustomerCart(customerId).getSubTotal();
     }
 
-    public int getTotalItems(Cart cart) {
-        return cart.getTotalItems();
+    @Override
+    public int getTotalItems(String customerId) {
+        // Uses the getTotalItems() method already built in the Cart model --> Delegation
+        return getCustomerCart(customerId).getTotalItems();
     }
-
 }

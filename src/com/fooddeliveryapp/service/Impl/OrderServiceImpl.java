@@ -1,165 +1,125 @@
 package com.fooddeliveryapp.service.Impl;
 
-import com.fooddeliveryapp.model.*;
-import com.fooddeliveryapp.type.OrderStatus;
-import com.fooddeliveryapp.repository.DeliveryAgentRepository;
+import com.fooddeliveryapp.config.SystemConfig;
+import com.fooddeliveryapp.exception.FoodDeliveryException;
+import com.fooddeliveryapp.model.Cart;
+import com.fooddeliveryapp.model.Order;
+import com.fooddeliveryapp.model.OrderItem;
+import com.fooddeliveryapp.model.Payment;
 import com.fooddeliveryapp.repository.OrderRepository;
-import com.fooddeliveryapp.repository.UserRepository;
-import com.fooddeliveryapp.strategy.Impl.DiscountStrategy;
-import com.fooddeliveryapp.strategy.NoDiscount;
-import com.fooddeliveryapp.strategy.Impl.PaymentStrategy;
-import com.fooddeliveryapp.util.IdGenerator;
+import com.fooddeliveryapp.service.CartService;
 import com.fooddeliveryapp.service.OrderService;
+import com.fooddeliveryapp.service.PaymentService;
+import com.fooddeliveryapp.strategy.Impl.PaymentStrategy;
+import com.fooddeliveryapp.type.ErrorType;
+import com.fooddeliveryapp.type.IdType;
+import com.fooddeliveryapp.type.OrderStatus;
+import com.fooddeliveryapp.util.IdGenerator;
 
-import java.time.LocalDateTime;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.List;
+import java.util.Optional;
 
 public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
-    private final UserRepository userRepository;
-    private final DeliveryAgentRepository agentRepository;
-    private DiscountStrategy discountStrategy = new NoDiscount();
-    private final double deliveryFee = 40; // flat fee
-    private final double taxRate = 0.05;   // 5% tax
+    private final CartService cartService;
+    private final PaymentService paymentService;
 
-    public OrderServiceImpl(OrderRepository orderRepository,
-                            UserRepository userRepository,
-                            DeliveryAgentRepository agentRepository) {
+    public OrderServiceImpl(OrderRepository orderRepository, CartService cartService, PaymentService paymentService) {
         this.orderRepository = orderRepository;
-        this.userRepository = userRepository;
-        this.agentRepository = agentRepository;
+        this.cartService = cartService;
+        this.paymentService = paymentService;
     }
 
-    // Admin can set discount strategy anytime
-    public void setDiscountStrategy(DiscountStrategy discountStrategy) {
-        if (discountStrategy == null) {
-            this.discountStrategy = new NoDiscount(); // fallback
-        } else {
-            this.discountStrategy = discountStrategy;
-        }
-    }
-
-    // ORDER CREATION
     @Override
-    public Order placeOrder(int customerId, PaymentStrategy paymentStrategy) {
-        if(paymentStrategy == null){
-            throw new OrderProcessingException("Payment method must be provided");
-        }
-
-        Customer customer = (Customer) userRepository.findById(customerId)
-                .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
-
-        Cart cart = customer.getActiveCart();
+    public Order placeOrder(String customerId, PaymentStrategy paymentStrategy) {
+        Cart cart = cartService.getCart(customerId);
         if (cart.isEmpty()) {
-            throw new CartOperationException("Cart is empty");
+            throw new FoodDeliveryException(ErrorType.ORDER_ERROR, "Cannot place order with an empty cart");
         }
 
-        String orderNumber = IdGenerator.nextOrderNumber();
+        List<OrderItem> orderItems = cart.getItems().stream()
+                .map(ci -> new OrderItem(ci.getMenuItemId(), ci.getMenuItemName(), ci.getPriceAtAddTime(), ci.getQuantity()))
+                .toList();
 
-        List<OrderItem> orderItems = cart.getItems();
-        Order order = new Order(orderNumber, customerId,
-                cart.getRestaurant().getId(),
-                orderItems);
-
-
+        SystemConfig config = SystemConfig.getInstance();
         double subTotal = cart.getSubTotal();
-        double discount = discountStrategy.calculateDiscount(order);
-        double tax = (subTotal - discount) * taxRate;
-        double finalAmount = subTotal - discount + tax + deliveryFee;
 
-        order.setSubTotal(subTotal);
-        order.setDiscount(discount);
-        order.setTax(tax);
-        order.setDeliveryFee(deliveryFee);
-        order.setFinalAmount(finalAmount);
-        order.setStatus(OrderStatus.PLACED);
+        // Temp order to calculate discount
+        Order tempOrder = new Order("TEMP", customerId, orderItems, subTotal, 0, 0);
+        double discount = config.getDiscountStrategy().calculateDiscount(tempOrder);
+
+        // Create actual order
+        Order order = new Order(
+                IdGenerator.generate(IdType.ORDER),
+                customerId,
+                orderItems,
+                subTotal,
+                discount,
+                config.getDeliveryFee()
+        );
+
+        // Process Payment
+        Payment payment = paymentService.processPayment(order, paymentStrategy);
+        order.attachPayment(payment.getPaymentId());
 
         orderRepository.save(order);
-        cart.clear();
-
-        // dynamic payment per order
-        paymentStrategy.pay(finalAmount);
+        cartService.clearCart(customerId);
 
         return order;
     }
 
-    // delivery agent assignment
     @Override
-    public void assignDeliveryAgent(String orderNumber, DeliveryAgent agent) {
-        Order order = orderRepository.findByOrderNumber(orderNumber)
-                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
-
-        if (!agent.isAvailable()) {
-            throw new OrderProcessingException("Agent not available");
-        }
-
-        agent.setAvailable(false);
-        order.setAssignedAgentId(agent.getId());
-        order.setStatus(OrderStatus.ASSIGNED);
-
-        agentRepository.save(agent);
-        orderRepository.save(order);
+    public void assignDeliveryAgent(String orderNumber, String agentId) {
+        Order order = getOrderOrThrow(orderNumber);
+        order.assignDeliveryAgent(agentId);
+        orderRepository.update(order);
     }
 
     @Override
     public void markOrderOutForDelivery(String orderNumber) {
-        Order order = orderRepository.findByOrderNumber(orderNumber)
-                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
-
-        order.setStatus(OrderStatus.OUT_FOR_DELIVERY);
-        orderRepository.save(order);
+        Order order = getOrderOrThrow(orderNumber);
+        order.markOutForDelivery();
+        orderRepository.update(order);
     }
 
     @Override
     public void markOrderDelivered(String orderNumber) {
-        Order order = orderRepository.findByOrderNumber(orderNumber)
-                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
-
-        order.setStatus(OrderStatus.DELIVERED);
-        order.setDeliveredAt(LocalDateTime.now());
-
-        if (order.getAssignedAgentId() != null) {
-            DeliveryAgent agent = agentRepository.findById(order.getAssignedAgentId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Agent not found"));
-            agent.setTotalDeliveries(agent.getTotalDeliveries() + 1);
-            agent.setAvailable(true);
-            agentRepository.save(agent);
-        }
-
-        orderRepository.save(order);
+        Order order = getOrderOrThrow(orderNumber);
+        order.markDelivered();
+        orderRepository.update(order);
     }
 
     @Override
     public void cancelOrder(String orderNumber) {
-        Order order = orderRepository.findByOrderNumber(orderNumber)
-                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
-
-        order.setStatus(OrderStatus.CANCELLED);
-
-        // Free the agent if assigned
-        if (order.getAssignedAgentId() != null) {
-            DeliveryAgent agent = agentRepository.findById(order.getAssignedAgentId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Agent not found"));
-            agent.setAvailable(true);
-            agentRepository.save(agent);
-        }
-
-        orderRepository.save(order);
+        Order order = getOrderOrThrow(orderNumber);
+        order.cancel();
+        orderRepository.update(order);
     }
 
-    // RETRIEVAL METHODS
     @Override
     public Optional<Order> getOrderById(String orderNumber) {
         return orderRepository.findByOrderNumber(orderNumber);
     }
 
     @Override
-    public List<Order> getOrdersByCustomer(int customerId) {
-        return orderRepository.findAll().stream()
-                .filter(o -> o.getCustomerId() == customerId)
-                .collect(Collectors.toList());
+    public List<Order> getOrdersByCustomer(String customerId) {
+        return orderRepository.findByCustomerId(customerId);
+    }
+
+    @Override
+    public List<Order> getOrdersByDeliveryAgent(String agentId) {
+        return orderRepository.findByDeliveryAgentId(agentId);
+    }
+
+    @Override
+    public List<Order> getOrdersByStatus(OrderStatus status) {
+        return orderRepository.findAllByStatus(status);
+    }
+
+    @Override
+    public List<Order> getOngoingOrders() {
+        return orderRepository.findOngoingOrders();
     }
 
     @Override
@@ -167,17 +127,8 @@ public class OrderServiceImpl implements OrderService {
         return orderRepository.findAll();
     }
 
-    @Override
-    public List<Order> getOrdersByStatus(OrderStatus status) {
-        return orderRepository.findAll().stream()
-                .filter(o -> o.getStatus() == status)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<Order> getOrdersByDeliveryAgent(int agentId) {
-        return orderRepository.findAll().stream()
-                .filter(o -> o.getAssignedAgentId() != null && o.getAssignedAgentId() == agentId)
-                .collect(Collectors.toList());
+    private Order getOrderOrThrow(String orderNumber) {
+        return orderRepository.findByOrderNumber(orderNumber)
+                .orElseThrow(() -> new FoodDeliveryException(ErrorType.RESOURCE_NOT_FOUND, "Order not found"));
     }
 }

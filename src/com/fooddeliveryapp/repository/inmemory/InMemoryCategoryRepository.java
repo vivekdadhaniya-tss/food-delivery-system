@@ -78,4 +78,9 @@ public class InMemoryCategoryRepository implements CategoryRepository {
         }
         return nameIndex.containsKey(name.toLowerCase());
     }
+
+    @Override
+    public boolean existsById(String categoryId) {
+        return store.get(categoryId) != null;
+    }
 }

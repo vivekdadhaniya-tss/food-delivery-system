@@ -3,147 +3,151 @@ package com.fooddeliveryapp.controller;
 import com.fooddeliveryapp.exception.FoodDeliveryException;
 import com.fooddeliveryapp.model.*;
 import com.fooddeliveryapp.service.*;
-import com.fooddeliveryapp.strategy.*;
+import com.fooddeliveryapp.strategy.CashPayment;
+import com.fooddeliveryapp.strategy.UPIPayment;
 import com.fooddeliveryapp.strategy.Impl.PaymentStrategy;
-import com.fooddeliveryapp.util.InputUtil;
+import com.fooddeliveryapp.util.ConsoleInput;
+import com.fooddeliveryapp.util.FormatUtil;
+import com.fooddeliveryapp.util.TablePrinter;
+import com.fooddeliveryapp.view.InvoiceView;
 
-import java.util.Optional;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class CustomerController {
+    private final MenuService menuService;
+    private final CartService cartService;
     private final OrderService orderService;
     private final PaymentService paymentService;
-    private final RestaurantService restaurantService;
-    private final InvoiceService invoiceService;
-    private final DeliveryService deliveryService; // Added DeliveryService
+    private final DeliveryService deliveryService;
 
-    public CustomerController(OrderService orderService, PaymentService paymentService, RestaurantService restaurantService, InvoiceService invoiceService, DeliveryService deliveryService) {
+    public CustomerController(MenuService menuService, CartService cartService, OrderService orderService, PaymentService paymentService, DeliveryService deliveryService) {
+        this.menuService = menuService;
+        this.cartService = cartService;
         this.orderService = orderService;
         this.paymentService = paymentService;
-        this.restaurantService = restaurantService;
-        this.invoiceService = invoiceService;
         this.deliveryService = deliveryService;
     }
 
     public void start(User user) {
         Customer customer = (Customer) user;
         while (true) {
-            System.out.println("\n=== CUSTOMER DASHBOARD ===");
-            System.out.println("--- Browse & Search ---");
-            System.out.println("1. View All Restaurants\n2. View All Food Items\n3. Search Food by Category\n4. Search Food by Name");
-            System.out.println("--- Cart & Checkout ---");
-            System.out.println("5. Manage Cart\n6. Checkout / Place Order");
-            System.out.println("--- Order Management ---");
-            System.out.println("7. Track Ongoing Order\n8. Cancel Order");
-            System.out.println("--- History & Feedback ---");
-            System.out.println("9. View Order History & Re-order\n10. Generate / View Invoice\n11. Rate & Review\n12. Logout");
+            System.out.println("\n=======================================");
+            System.out.println("      🍽️ CUSTOMER DASHBOARD 🍽️      ");
+            System.out.println("=======================================");
+            System.out.println("1. Browse Menu");
+            System.out.println("2. Manage Cart (" + cartService.getTotalItems(customer.getId()) + " items)");
+            System.out.println("3. Checkout & Place Order");
+            System.out.println("4. Track Ongoing Orders");
+            System.out.println("5. View Order History & Invoices");
+            System.out.println("6. Rate Delivery Agent");
+            System.out.println("7. Logout");
+            System.out.println("=======================================");
 
-            int choice = InputUtil.getInt("Choose an option: ");
+            int choice = ConsoleInput.getInt("Select an option: ");
 
             try {
                 switch (choice) {
-                    case 1 -> restaurantService.getActiveRestaurants().forEach(r -> System.out.println(r.getId() + " | " + r.getName()));
-                    case 2 -> viewAllFoodItems();
-                    case 3 -> searchFoodByCategory();
-                    case 4 -> searchFoodByName();
-                    case 5 -> manageCart(customer);
-                    case 6 -> checkout(customer);
-                    case 7 -> trackOrders(customer);
-                    case 8 -> cancelOrder(customer);
-                    case 9 -> viewOrderHistory(customer);
-                    case 10 -> generateInvoice(customer);
-                    case 11 -> rateAndReview();
-                    case 12 -> { return; }
-                    default -> System.out.println("Invalid choice.");
+                    case 1 -> browseMenu(customer);
+                    case 2 -> manageCart(customer);
+                    case 3 -> checkout(customer);
+                    case 4 -> trackOrders(customer);
+                    case 5 -> viewHistoryAndInvoice(customer);
+                    case 6 -> rateAgent();
+                    case 7 -> {
+                        System.out.println("Logging out...");
+                        return;
+                    }
+                    default -> System.out.println("❌ Invalid choice.");
                 }
-            } catch (FoodDeliveryException e) {
-                System.out.println("Error: " + e.getMessage());
+            } catch (FoodDeliveryException | IllegalArgumentException e) {
+                System.out.println("❌ Error: " + e.getMessage());
             }
         }
     }
 
-    private void viewAllFoodItems() {
-        restaurantService.getActiveRestaurants().forEach(r -> {
-            System.out.println("\n--- " + r.getName() + " ---");
-            restaurantService.getMenu(r.getId()).forEach(i -> System.out.println("ID: " + i.getId() + " | Name: " + i.getName() + " | Price: ₹" + i.getPrice() + " | Stock: " + i.getStock() + " | Category: " + i.getCategory()));
-        });
-    }
+    private void browseMenu(Customer customer) {
+        List<String[]> rows = menuService.getAllMenuItems().stream()
+                .filter(MenuItem::isAvailable)
+                .map(m -> new String[]{m.getId(), m.getName(), FormatUtil.formatCurrency(m.getPrice())})
+                .collect(Collectors.toList());
 
-    private void searchFoodByCategory() {
-        System.out.println("1.VEG 2.NON_VEG 3.DRINKS 4.DESSERT");
-        FoodCategory cat = FoodCategory.values()[InputUtil.getInt("Choose (1-4): ") - 1];
-        restaurantService.getActiveRestaurants().forEach(r -> {
-            restaurantService.searchMenuItems(r.getId(), null, cat).forEach(i -> System.out.println(r.getName() + " | ID: " + i.getId() + " | Name: " + i.getName() + " | Price: ₹" + i.getPrice() + " | Stock: " + i.getStock()));
-        });
-    }
+        TablePrinter.print(new String[]{"Item ID", "Name", "Price"}, rows);
 
-    private void searchFoodByName() {
-        String name = InputUtil.getString("Enter food name: ");
-        restaurantService.getActiveRestaurants().forEach(r -> {
-            restaurantService.searchMenuItems(r.getId(), name, null).forEach(i -> System.out.println(r.getName() + " | ID: " + i.getId() + " | Name: " + i.getName() + " | Price: ₹" + i.getPrice() + " | Stock: " + i.getStock()));
-        });
+        if (ConsoleInput.getString("Add item to cart? (y/n): ").equalsIgnoreCase("y")) {
+            String itemId = ConsoleInput.getString("Enter Item ID: ");
+            int qty = ConsoleInput.getInt("Enter Quantity: ");
+            cartService.addItem(customer.getId(), itemId, qty);
+            System.out.println("✅ Item added to cart!");
+        }
     }
 
     private void manageCart(Customer customer) {
-        Cart cart = customer.getActiveCart();
-        System.out.println("1. View Cart | 2. Add Item | 3. Remove Item");
-        int choice = InputUtil.getInt("Choose: ");
+        Cart cart = cartService.getCart(customer.getId());
+        if (cart.isEmpty()) {
+            System.out.println("🛒 Your cart is empty.");
+            return;
+        }
+
+        List<String[]> rows = cart.getItems().stream()
+                .map(i -> new String[]{i.getMenuItemId(), i.getMenuItemName(), String.valueOf(i.getQuantity()), FormatUtil.formatCurrency(i.getLineTotal())})
+                .collect(Collectors.toList());
+        TablePrinter.print(new String[]{"Item ID", "Name", "Qty", "Total"}, rows);
+        System.out.println("Cart Subtotal: " + FormatUtil.formatCurrency(cart.getSubTotal()));
+
+        System.out.println("\n1. Remove Item | 2. Clear Cart | 3. Go Back");
+        int choice = ConsoleInput.getInt("Choose: ");
         if (choice == 1) {
-            if (cart.isEmpty()) System.out.println("Cart is empty.");
-            else {
-//                cart.getItems().forEach(i -> System.out.println(i.getFoodItemName() + " x" + i.getQuantity() + " = ₹" + (i.getPriceAtPurchase() * i.getQuantity())));
-                System.out.println("Total: ₹" + cart.getSubTotal());
-            }
+            cartService.removeItem(customer.getId(), ConsoleInput.getString("Enter Item ID to remove: "));
+            System.out.println("✅ Item removed.");
         } else if (choice == 2) {
-            int rId = InputUtil.getInt("Restaurant ID: ");
-            Restaurant r = restaurantService.getRestaurantById(rId).orElseThrow(() -> new FoodDeliveryException("Not found"));
-            String fId = InputUtil.getString("Food ID: ");
-            FoodItem f = restaurantService.getMenuItemById(rId, fId).orElseThrow(() -> new FoodDeliveryException("Not found"));
-//            cart.addItem(r, f.getId(), f.getName(), f.getPrice(), InputUtil.getInt("Quantity: "));
-            System.out.println("Added to cart.");
-        } else if (choice == 3) {
-//            cart.removeItem(InputUtil.getString("Food ID to remove: "));
-            System.out.println("Removed.");
+            cartService.clearCart(customer.getId());
+            System.out.println("✅ Cart cleared.");
         }
     }
 
     private void checkout(Customer customer) {
-        if (customer.getActiveCart().isEmpty()) { System.out.println("Cart is empty."); return; }
-        System.out.println("1. Cash | 2. UPI");
-        PaymentStrategy strategy = InputUtil.getInt("Choose: ") == 1 ? new CashPayment() : new UPIPayment(InputUtil.getUPI("UPI ID: "));
-        Order order = orderService.placeOrder(customer.getId(), strategy);
-        paymentService.processPayment(order, strategy);
-        System.out.println("Order Placed: " + order.getOrderNumber());
-
-        // Auto-assign order to a delivery agent
-        Optional<DeliveryAgent> agentOpt = deliveryService.assignOrder(order);
-        if (agentOpt.isPresent()) {
-            System.out.println("Order assigned to Delivery Agent: " + agentOpt.get().getName());
-        } else {
-            System.out.println("No delivery agents available right now. Order will be assigned later.");
+        if (cartService.getCart(customer.getId()).isEmpty()) {
+            System.out.println("❌ Cart is empty.");
+            return;
         }
+
+        System.out.println("\n--- Select Payment Method ---");
+        System.out.println("1. Cash on Delivery | 2. UPI");
+        PaymentStrategy strategy = ConsoleInput.getInt("Choose: ") == 1 ? new CashPayment() : new UPIPayment(ConsoleInput.getString("Enter UPI ID: "));
+
+        Order order = orderService.placeOrder(customer.getId(), strategy);
+        deliveryService.assignAgentToOrder(order.getOrderNumber()); // Auto-assign agent
+
+        System.out.println("✅ Order Placed Successfully! Order No: " + order.getOrderNumber());
     }
 
     private void trackOrders(Customer customer) {
-        orderService.getOrdersByCustomer(customer.getId()).stream()
-                .filter(o -> o.getStatus() != com.fooddeliveryapp.type.OrderStatus.DELIVERED && o.getStatus() != com.fooddeliveryapp.type.OrderStatus.CANCELLED)
-                .forEach(o -> System.out.println("Order: " + o.getOrderNumber() + " | Status: " + o.getStatus() + " | Agent ID: " + (o.getAssignedAgentId() != null ? o.getAssignedAgentId() : "Unassigned")));
+        List<String[]> rows = orderService.getOngoingOrders().stream()
+                .filter(o -> o.getCustomerId().equals(customer.getId()))
+                .map(o -> new String[]{o.getOrderNumber(), o.getStatus().name(), o.getDeliveryAgentId() != null ? o.getDeliveryAgentId() : "Finding Agent..."})
+                .collect(Collectors.toList());
+        TablePrinter.print(new String[]{"Order No", "Status", "Agent ID"}, rows);
     }
 
-    private void cancelOrder(Customer customer) {
-        orderService.cancelOrder(InputUtil.getString("Order Number: "));
-        System.out.println("Order Cancelled.");
+    private void viewHistoryAndInvoice(Customer customer) {
+        List<String[]> rows = orderService.getOrdersByCustomer(customer.getId()).stream()
+                .map(o -> new String[]{o.getOrderNumber(), o.getStatus().name(), FormatUtil.formatCurrency(o.getFinalAmount()), FormatUtil.formatDate(o.getCreatedAt())})
+                .collect(Collectors.toList());
+        TablePrinter.print(new String[]{"Order No", "Status", "Total", "Date"}, rows);
+
+        if (ConsoleInput.getString("Generate Invoice for an order? (y/n): ").equalsIgnoreCase("y")) {
+            String orderId = ConsoleInput.getString("Enter Order No: ");
+            Order order = orderService.getOrderById(orderId).orElseThrow(() -> new FoodDeliveryException(null, "Order not found"));
+            List<Payment> payments = paymentService.getPaymentsByOrderId(orderId);
+            InvoiceView.printInvoice(order, payments, customer);
+        }
     }
 
-    private void viewOrderHistory(Customer customer) {
-        orderService.getOrdersByCustomer(customer.getId()).forEach(o -> System.out.println("Order: " + o.getOrderNumber() + " | Status: " + o.getStatus() + " | Amount: ₹" + o.getFinalAmount()));
-    }
-
-    private void generateInvoice(Customer customer) {
-        Order o = orderService.getOrderById(InputUtil.getString("Order Number: ")).orElseThrow(() -> new FoodDeliveryException("Not found"));
-        System.out.println(invoiceService.generateInvoice(o));
-    }
-
-    private void rateAndReview() {
-        System.out.println("Rating submitted successfully! (Mocked)");
+    private void rateAgent() {
+        String agentId = ConsoleInput.getString("Enter Delivery Agent ID: ");
+        double rating = ConsoleInput.getDouble("Enter Rating (1.0 to 5.0): ");
+        deliveryService.rateDeliveryAgent(agentId, rating);
+        System.out.println("✅ Thank you for your feedback!");
     }
 }

@@ -1,6 +1,8 @@
 package com.fooddeliveryapp.config;
 
 
+import com.fooddeliveryapp.exception.FoodDeliveryException;
+import com.fooddeliveryapp.service.AuthService;
 import com.fooddeliveryapp.strategy.Impl.DiscountStrategy;
 import com.fooddeliveryapp.strategy.NoDiscount;
 import com.fooddeliveryapp.util.AppConstants;
@@ -23,6 +25,25 @@ public class SystemConfig {
             instance = new SystemConfig();
         }
         return instance;
+    }
+
+    // SYSTEM INITIALIZATION
+    public void initializeSystemDefaults(AuthService authService) {
+        try {
+            if (!authService.adminExists(AppConstants.DEFAULT_ADMIN_EMAIL)) {
+                authService.registerAdmin(
+                        AppConstants.DEFAULT_ADMIN_NAME,
+                        AppConstants.DEFAULT_ADMIN_PHONE,
+                        AppConstants.DEFAULT_ADMIN_EMAIL,
+                        AppConstants.DEFAULT_ADMIN_PASSWORD
+                );
+                System.out.println("⚙️ System Boot: Default Admin account initialized from System.");
+            } else {
+                System.out.println("Default admin already exists, skipping creation.");
+            }
+        } catch (FoodDeliveryException e) {
+            e.printStackTrace(); // unexpected error, should be logged
+        }
     }
 
     // DiscountStrategy getter/setter

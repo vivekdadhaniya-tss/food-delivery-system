@@ -28,7 +28,7 @@ public class Order {
     private LocalDateTime updatedAt;
     private LocalDateTime deliveredAt;
 
-    public Order(String orderNumber, String customerId, List<OrderItem> items, double subTotal, double discountAmount) {
+    public Order(String orderNumber, String customerId, List<OrderItem> items, double subTotal, double discountAmount, double deliveryFee) {
 
         this.orderNumber = orderNumber;
         this.customerId = customerId;
@@ -36,7 +36,7 @@ public class Order {
 
         this.subTotal = subTotal;
         this.discountAmount = discountAmount;
-        this.deliveryFee = AppConstants.DEFAULT_DELIVERY_FEE;
+        this.deliveryFee = deliveryFee;
 
         calculateAmounts();
 

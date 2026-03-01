@@ -1,7 +1,6 @@
 package com.fooddeliveryapp.util;
 
 import java.util.Objects;
-import java.util.regex.Pattern;
 
 import static com.fooddeliveryapp.util.AppConstants.*;
 

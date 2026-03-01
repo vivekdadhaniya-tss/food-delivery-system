@@ -8,11 +8,15 @@ import java.util.Optional;
 public interface CategoryRepository {
 
     Category save(Category category);
+
     Optional<Category> findById(String id);
     Optional<Category> findByName(String name);
     List<Category> findAll();
     List<Category> findAllActive();
     List<Category> findAllInactive();
+
     void deleteById(String id);
+
     boolean existsByName(String name);
+    boolean existsById(String categoryId);
 }

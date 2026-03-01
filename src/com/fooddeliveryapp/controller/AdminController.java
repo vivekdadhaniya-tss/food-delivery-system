@@ -1,145 +1,171 @@
 package com.fooddeliveryapp.controller;
 
+import com.fooddeliveryapp.config.SystemConfig;
 import com.fooddeliveryapp.exception.FoodDeliveryException;
 import com.fooddeliveryapp.model.*;
-import com.fooddeliveryapp.type.*;
+import com.fooddeliveryapp.type.Role;
 import com.fooddeliveryapp.service.*;
-import com.fooddeliveryapp.service.Impl.OrderServiceImpl;
-import com.fooddeliveryapp.strategy.*;
-import com.fooddeliveryapp.util.InputUtil;
-import com.fooddeliveryapp.util.IdGenerator;
+import com.fooddeliveryapp.strategy.FlatDiscount;
+import com.fooddeliveryapp.strategy.NoDiscount;
+import com.fooddeliveryapp.strategy.PercentageDiscount;
+import com.fooddeliveryapp.util.ConsoleInput;
+import com.fooddeliveryapp.util.FormatUtil;
+import com.fooddeliveryapp.util.TablePrinter;
 
-import java.util.*;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class AdminController {
-    private final RestaurantService restaurantService;
+    private final MenuService menuService;
     private final UserService userService;
     private final OrderService orderService;
     private final PaymentService paymentService;
 
-    public AdminController(RestaurantService restaurantService, UserService userService, OrderService orderService, PaymentService paymentService) {
-        this.restaurantService = restaurantService;
+    public AdminController(MenuService menuService, UserService userService, OrderService orderService, PaymentService paymentService) {
+        this.menuService = menuService;
         this.userService = userService;
         this.orderService = orderService;
         this.paymentService = paymentService;
     }
 
-    public void start(User user) {
+    public void start(User admin) {
         while (true) {
-            System.out.println("\n=== ADMIN DASHBOARD ===");
-            System.out.println("--- Restaurant & Menu ---");
-            System.out.println("1. Manage Restaurants\n2. Manage Menu Items");
-            System.out.println("--- Users & Agents ---");
-            System.out.println("3. View All Customers\n4. View All Delivery Agents\n5. View Available Delivery Agents");
-            System.out.println("--- Orders & Finance ---");
-            System.out.println("6. View All Order History\n7. View Ongoing Orders\n8. View Payment History\n9. View Total Revenue");
-            System.out.println("--- Settings ---");
-            System.out.println("10. Set Discount Strategy\n11. Logout");
+            System.out.println("\n=======================================");
+            System.out.println("        🛡️ ADMIN DASHBOARD 🛡️        ");
+            System.out.println("=======================================");
+            System.out.println("--- 🍔 Menu Management ---");
+            System.out.println("1. Manage Categories");
+            System.out.println("2. Manage Menu Items");
+            System.out.println("--- 👥 Users & Agents ---");
+            System.out.println("3. View All Customers");
+            System.out.println("4. View Delivery Agents");
+            System.out.println("--- 📦 Orders & Finance ---");
+            System.out.println("5. View All Orders");
+            System.out.println("6. View Financial Overview");
+            System.out.println("--- ⚙️ System Settings ---");
+            System.out.println("7. Configure Discount Strategy");
+            System.out.println("8. Configure Delivery Fee & Tax");
+            System.out.println("9. Logout");
+            System.out.println("=======================================");
 
-            int choice = InputUtil.getInt("Choose an option: ");
+            int choice = ConsoleInput.getInt("Select an option: ");
 
             try {
                 switch (choice) {
-                    case 1 -> manageRestaurants();
+                    case 1 -> manageCategories();
                     case 2 -> manageMenuItems();
-                    case 3 -> viewUsersByRole(Role.CUSTOMER);
-                    case 4 -> viewUsersByRole(Role.DELIVERY_AGENT);
-                    case 5 -> viewAvailableAgents();
-                    case 6 -> viewAllOrders();
-                    case 7 -> viewOngoingOrders();
-                    case 8 -> viewPaymentHistory();
-                    case 9 -> viewTotalRevenue();
-                    case 10 -> setDiscountStrategy();
-                    case 11 -> { System.out.println("Logging out..."); return; }
-                    default -> System.out.println("Invalid choice.");
+                    case 3 -> viewUsers(Role.CUSTOMER);
+                    case 4 -> viewDeliveryAgents();
+                    case 5 -> viewOrders();
+                    case 6 -> viewFinance();
+                    case 7 -> configureDiscounts();
+                    case 8 -> configureFees();
+                    case 9 -> {
+                        System.out.println("Logging out...");
+                        return;
+                    }
+                    default -> System.out.println("❌ Invalid choice.");
                 }
-            } catch (FoodDeliveryException e) {
-                System.out.println("Error: " + e.getMessage());
-            } catch (Exception e) {
-                System.out.println("System Error: Something went wrong!");
+            } catch (FoodDeliveryException | IllegalArgumentException e) {
+                System.out.println("❌ Error: " + e.getMessage());
             }
         }
     }
 
-    private void manageRestaurants() {
-        System.out.println("\n1. Add | 2. View | 3. Remove | 4. Activate | 5. Deactivate");
-        int choice = InputUtil.getInt("Choose: ");
+    private void manageCategories() {
+        System.out.println("\n1. Add Category | 2. View Categories | 3. Toggle Status");
+        int choice = ConsoleInput.getInt("Choose: ");
         if (choice == 1) {
-            String name = InputUtil.getString("Restaurant Name: ");
-            Restaurant r = new Restaurant(IdGenerator.nextRestaurantId(), name, true, new HashMap<>(), new ArrayList<>(), 0);
-            restaurantService.addRestaurant(r);
-            System.out.println("Added ID: " + r.getId());
+            String name = ConsoleInput.getString("Category Name: ");
+            Category c = menuService.addCategory(name);
+            System.out.println("✅ Category added with ID: " + c.getId());
         } else if (choice == 2) {
-            restaurantService.getAllRestaurants().forEach(r -> System.out.println("ID: " + r.getId() + " | Name: " + r.getName() + " | Active: " + r.isActive() + " | Rating: " + r.getRatings() + " | Total Orders: " + r.getTotalOrders()));
+            List<String[]> rows = menuService.getAllCategories().stream()
+                    .map(c -> new String[]{c.getId(), c.getName(), c.isActive() ? "Active" : "Inactive"})
+                    .collect(Collectors.toList());
+            TablePrinter.print(new String[]{"ID", "Name", "Status"}, rows);
         } else if (choice == 3) {
-            restaurantService.removeRestaurant(InputUtil.getInt("ID to remove: "));
-            System.out.println("Removed.");
-        } else if (choice == 4 || choice == 5) {
-            int id = InputUtil.getInt("Restaurant ID: ");
-            Restaurant r = restaurantService.getRestaurantById(id).orElseThrow(() -> new FoodDeliveryException("Not found"));
-            r.setActive(choice == 4);
-            restaurantService.updateRestaurant(r);
-            System.out.println("Status updated.");
+            String id = ConsoleInput.getString("Category ID: ");
+            boolean activate = ConsoleInput.getInt("1 to Activate, 0 to Deactivate: ") == 1;
+            menuService.toggleCategoryStatus(id, activate);
+            System.out.println("✅ Status updated.");
         }
     }
 
     private void manageMenuItems() {
-        int rId = InputUtil.getInt("Restaurant ID: ");
-        System.out.println("\n1. Add | 2. View | 3. Remove | 4. Update");
-        int choice = InputUtil.getInt("Choose: ");
+        System.out.println("\n1. Add Item | 2. View Items | 3. Toggle Availability");
+        int choice = ConsoleInput.getInt("Choose: ");
         if (choice == 1) {
-            String id = IdGenerator.nextFoodId();
-            String name = InputUtil.getString("Name: ");
-            double price = InputUtil.getDouble("Price: ");
-            int stock = InputUtil.getInt("Stock: ");
-            System.out.println("Categories: 1.VEG 2.NON_VEG 3.DRINKS 4.DESSERT");
-            FoodCategory category = FoodCategory.values()[InputUtil.getInt("Choose Category (1-4): ") - 1];
-            FoodItem item = new FoodItem(id, name, price, stock, category);
-            restaurantService.addMenuItem(rId, item);
-            System.out.println("Menu item added with ID: " + id);
+            String catId = ConsoleInput.getString("Category ID: ");
+            String name = ConsoleInput.getString("Item Name: ");
+            double price = ConsoleInput.getDouble("Price: ");
+            MenuItem item = menuService.addMenuItem(name, price, catId);
+            System.out.println("✅ Item added with ID: " + item.getId());
         } else if (choice == 2) {
-            restaurantService.getMenu(rId).forEach(i -> System.out.println("ID: " + i.getId() + " | Name: " + i.getName() + " | Price: ₹" + i.getPrice() + " | Stock: " + i.getStock() + " | Category: " + i.getCategory()));
+            List<String[]> rows = menuService.getAllMenuItems().stream()
+                    .map(m -> new String[]{m.getId(), m.getName(), m.getCategoryId(), FormatUtil.formatCurrency(m.getPrice()), m.isAvailable() ? "Yes" : "No"})
+                    .collect(Collectors.toList());
+            TablePrinter.print(new String[]{"ID", "Name", "Category ID", "Price", "Available"}, rows);
         } else if (choice == 3) {
-            restaurantService.removeMenuItem(rId, InputUtil.getString("Item ID: "));
-            System.out.println("Removed.");
+            String id = ConsoleInput.getString("Item ID: ");
+            boolean available = ConsoleInput.getInt("1 to make Available, 0 to make Unavailable: ") == 1;
+            menuService.toggleMenuItemAvailability(id, available);
+            System.out.println("✅ Availability updated.");
         }
     }
 
-    private void viewUsersByRole(Role role) {
-        userService.getUsersByRole(role).forEach(u -> System.out.println("ID: " + u.getId() + " | Name: " + u.getName() + " | Email: " + u.getEmail() + " | Phone: " + u.getPhone()));
+    private void viewUsers(Role role) {
+        List<String[]> rows = userService.getUsersByRole(role).stream()
+                .map(u -> new String[]{u.getId(), u.getName(), u.getEmail(), u.getPhone()})
+                .collect(Collectors.toList());
+        TablePrinter.print(new String[]{"ID", "Name", "Email", "Phone"}, rows);
     }
 
-    private void viewAvailableAgents() {
-        userService.getAvailableDeliveryAgents().forEach(a -> System.out.println("ID: " + a.getId() + " | Name: " + a.getName() + " | Email: " + a.getEmail() + " | Phone: " + a.getPhone()));
+    private void viewDeliveryAgents() {
+        List<String[]> rows = userService.getAllDeliveryAgents().stream()
+                .map(a -> new String[]{a.getId(), a.getName(), a.isAvailable() ? "Yes" : "No", String.valueOf(a.getTotalDeliveries()), String.format("%.1f", a.getRating())})
+                .collect(Collectors.toList());
+        TablePrinter.print(new String[]{"ID", "Name", "Available", "Deliveries", "Rating"}, rows);
     }
 
-    private void viewAllOrders() {
-        orderService.getAllOrders().forEach(o -> System.out.println("Order: " + o.getOrderNumber() + " | Status: " + o.getStatus() + " | Amount: ₹" + o.getFinalAmount() + " | Customer ID: " + o.getCustomerId() + " | Agent ID: " + (o.getAssignedAgentId() != null ? o.getAssignedAgentId() : "Unassigned")));
+    private void viewOrders() {
+        List<String[]> rows = orderService.getAllOrders().stream()
+                .map(o -> new String[]{o.getOrderNumber(), o.getCustomerId(), o.getDeliveryAgentId() != null ? o.getDeliveryAgentId() : "Unassigned", o.getStatus().name(), FormatUtil.formatCurrency(o.getFinalAmount())})
+                .collect(Collectors.toList());
+        TablePrinter.print(new String[]{"Order No", "Customer ID", "Agent ID", "Status", "Total"}, rows);
     }
 
-    private void viewOngoingOrders() {
-        orderService.getAllOrders().stream()
-                .filter(o -> o.getStatus() != OrderStatus.DELIVERED && o.getStatus() != OrderStatus.CANCELLED)
-                .forEach(o -> System.out.println("Order: " + o.getOrderNumber() + " | Status: " + o.getStatus() + " | Agent ID: " + (o.getAssignedAgentId() != null ? o.getAssignedAgentId() : "Unassigned")));
+    private void viewFinance() {
+        System.out.println("\n💰 Total Revenue: " + FormatUtil.formatCurrency(paymentService.calculateTotalRevenue()));
+        List<String[]> rows = paymentService.getAllPayments().stream()
+                .map(p -> new String[]{p.getPaymentId(), p.getOrderId(), p.getMode().name(), p.getStatus().name(), FormatUtil.formatCurrency(p.getAmount())})
+                .collect(Collectors.toList());
+        TablePrinter.print(new String[]{"Payment ID", "Order ID", "Mode", "Status", "Amount"}, rows);
     }
 
-    private void viewPaymentHistory() {
-        paymentService.getAllPayments().forEach(p -> System.out.println("Payment ID: " + p.getPaymentId() + " | Order: " + p.getOrderNumber() + " | Amount: ₹" + p.getAmount() + " | Method: " + p.getMethod() + " | Status: " + p.getStatus()));
-    }
+    private void configureDiscounts() {
+        System.out.println("\n1. No Discount | 2. Flat Discount | 3. Percentage Discount");
+        int choice = ConsoleInput.getInt("Choose Strategy: ");
+        SystemConfig config = SystemConfig.getInstance();
 
-    private void viewTotalRevenue() {
-        double total = paymentService.getAllPayments().stream().mapToDouble(Payment::getAmount).sum();
-        System.out.println("Total Revenue: ₹" + total);
-    }
-
-    private void setDiscountStrategy() {
-        System.out.println("1. No Discount | 2. Flat | 3. Percentage");
-        int choice = InputUtil.getInt("Choose: ");
-        if (orderService instanceof OrderServiceImpl impl) {
-            if (choice == 1) impl.setDiscountStrategy(new NoDiscount());
-            else if (choice == 2) impl.setDiscountStrategy(new FlatDiscount(InputUtil.getDouble("Min Amount: "), InputUtil.getDouble("Flat Discount: ")));
-            else if (choice == 3) impl.setDiscountStrategy(new PercentageDiscount(InputUtil.getDouble("Min Amount: "), InputUtil.getDouble("Percentage: ")));
-            System.out.println("Strategy Updated.");
+        if (choice == 1) {
+            config.setDiscountStrategy(new NoDiscount());
+        } else if (choice == 2) {
+            double threshold = ConsoleInput.getDouble("Minimum Order Amount: ");
+            double amount = ConsoleInput.getDouble("Flat Discount Amount: ");
+            config.setDiscountStrategy(new FlatDiscount(threshold, amount));
+        } else if (choice == 3) {
+            double threshold = ConsoleInput.getDouble("Minimum Order Amount: ");
+            double percent = ConsoleInput.getDouble("Discount Percentage (e.g., 10 for 10%): ");
+            config.setDiscountStrategy(new PercentageDiscount(threshold, percent));
         }
+        System.out.println("✅ Discount Strategy Updated.");
+    }
+
+    private void configureFees() {
+        SystemConfig config = SystemConfig.getInstance();
+        config.setDeliveryFee(ConsoleInput.getDouble("Enter new Delivery Fee: "));
+        config.setTaxRate(ConsoleInput.getDouble("Enter new Tax Rate (%): "));
+        System.out.println("✅ Fees Updated.");
     }
 }

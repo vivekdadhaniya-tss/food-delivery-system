@@ -9,21 +9,18 @@ import java.util.Optional;
 
 public interface UserService {
 
-    // ===== Generic User CRUD =====
-    User createUser(User user);
-    Optional<User> getUserById(int id);
-    List<User> getAllUsers();
-    void deleteUserById(int id);
-
-    boolean existsById(int id);
+    // Generic User Queries
+    Optional<User> getUserById(String id);
     Optional<User> getUserByEmail(String email);
+    List<User> getAllUsers();
+    boolean existsById(String id);
+    void deleteUserById(String id);
 
-    // ===== Role-based Queries =====
+    // Role-based Queries
     List<User> getUsersByRole(Role role);
 
-    // ===== Delivery Agent Specific =====
+    // Delivery Agent Specific
     List<DeliveryAgent> getAllDeliveryAgents();
     List<DeliveryAgent> getAvailableDeliveryAgents();
-    Optional<DeliveryAgent> getNextAvailableDeliveryAgent(); // first available strategy
-
+    Optional<DeliveryAgent> getNextAvailableDeliveryAgent();
 }

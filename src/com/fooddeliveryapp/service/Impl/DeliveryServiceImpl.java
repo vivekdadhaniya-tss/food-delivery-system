@@ -1,71 +1,66 @@
 package com.fooddeliveryapp.service.Impl;
 
+import com.fooddeliveryapp.exception.FoodDeliveryException;
 import com.fooddeliveryapp.model.DeliveryAgent;
-import com.fooddeliveryapp.model.Order;
 import com.fooddeliveryapp.repository.DeliveryAgentRepository;
+import com.fooddeliveryapp.repository.UserRepository;
 import com.fooddeliveryapp.service.DeliveryService;
 import com.fooddeliveryapp.service.OrderService;
+import com.fooddeliveryapp.type.ErrorType;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 public class DeliveryServiceImpl implements DeliveryService {
 
-    private OrderService orderService;
-    private final Queue<Order> pendingOrdersQueue = new LinkedList<>();
-    private final DeliveryAgentRepository agentRepository;
+    private final DeliveryAgentRepository deliveryAgentRepository;
+    private final UserRepository userRepository;
+    private final OrderService orderService;
 
-    public DeliveryServiceImpl(DeliveryAgentRepository agentRepository) {
-        this.agentRepository = agentRepository;
-    }
-
-    @Override
-    public Optional<DeliveryAgent> assignOrder(Order order) {
-        Optional<DeliveryAgent> agentOpt = agentRepository.findAll().stream()
-                .filter(DeliveryAgent::isAvailable)
-                .findFirst();
-
-        if (agentOpt.isEmpty()) {
-            pendingOrdersQueue.offer(order);
-            return Optional.empty();
-        }
-
-        DeliveryAgent agent = agentOpt.get();
-
-        if (orderService != null) {
-            orderService.assignDeliveryAgent(order.getOrderNumber(), agent);
-        } else {
-            agent.setAvailable(false);
-            agentRepository.save(agent);
-            order.setAssignedAgentId(agent.getId());
-        }
-
-        return Optional.of(agent);
-    }
-
-    public void setOrderService(OrderService orderService) {
+    public DeliveryServiceImpl(DeliveryAgentRepository deliveryAgentRepository, UserRepository userRepository, OrderService orderService) {
+        this.deliveryAgentRepository = deliveryAgentRepository;
+        this.userRepository = userRepository;
         this.orderService = orderService;
     }
 
     @Override
-    public void completeDelivery(Order order) {
-        // FIX: OrderServiceImpl already updates the agent's availability and total deliveries!
-        // We only need to check if there are pending orders waiting for this newly freed agent.
-        Order pendingOrder = pendingOrdersQueue.poll();
-        if (pendingOrder != null) {
-            assignOrder(pendingOrder);
+    public Optional<DeliveryAgent> assignAgentToOrder(String orderId) {
+        Optional<DeliveryAgent> agentOpt = deliveryAgentRepository.findAvailableAgents().stream().findFirst();
+
+        if (agentOpt.isPresent()) {
+            DeliveryAgent agent = agentOpt.get();
+            agent.markBusy();
+            userRepository.save(agent); // Save agent state
+
+            orderService.assignDeliveryAgent(orderId, agent.getId()); // Update order
+        }
+        return agentOpt;
+    }
+
+    @Override
+    public void markOrderOutForDelivery(String orderId) {
+        orderService.markOrderOutForDelivery(orderId);
+    }
+
+    @Override
+    public void markOrderDelivered(String orderId) {
+        orderService.markOrderDelivered(orderId);
+
+        // Free up the agent
+        String agentId = orderService.getOrderById(orderId).get().getDeliveryAgentId();
+        if (agentId != null) {
+            DeliveryAgent agent = deliveryAgentRepository.findById(agentId).orElseThrow();
+            agent.markAvailable();
+            agent.incrementDeliveries();
+            userRepository.save(agent);
         }
     }
 
     @Override
-    public List<DeliveryAgent> getAvailableAgents() {
-        return agentRepository.findAll().stream()
-                .filter(DeliveryAgent::isAvailable)
-                .collect(Collectors.toList());
-    }
+    public void rateDeliveryAgent(String agentId, double rating) {
+        DeliveryAgent agent = deliveryAgentRepository.findById(agentId)
+                .orElseThrow(() -> new FoodDeliveryException(ErrorType.RESOURCE_NOT_FOUND, "Agent not found"));
 
-    @Override
-    public List<DeliveryAgent> getAllAgents() {
-        return agentRepository.findAll();
+        agent.addRating(rating);
+        userRepository.save(agent);
     }
 }
