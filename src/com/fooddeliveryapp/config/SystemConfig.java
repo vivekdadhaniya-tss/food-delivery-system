@@ -9,22 +9,23 @@ import com.fooddeliveryapp.util.AppConstants;
 
 public class SystemConfig {
 
-    private static SystemConfig instance;
+    // Singleton (Eager Initialization)
+    private static final SystemConfig INSTANCE = new SystemConfig();
+
+    public static SystemConfig getInstance() {
+        return INSTANCE;
+    }
+
+    // Runtime Configurable Fields
     private DiscountStrategy discountStrategy;
     private double taxRate;
     private double deliveryFee;
 
+    // Private Constructor
     private SystemConfig() {
         this.discountStrategy = new NoDiscount();
         this.taxRate = AppConstants.DEFAULT_TAX_PERCENT;
         this.deliveryFee = AppConstants.DEFAULT_DELIVERY_FEE;
-    }
-
-    public static SystemConfig getInstance() {
-        if (instance == null) {
-            instance = new SystemConfig();
-        }
-        return instance;
     }
 
     // SYSTEM INITIALIZATION

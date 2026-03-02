@@ -7,8 +7,8 @@ import java.util.*;
 
 public class InMemoryCategoryRepository implements CategoryRepository {
 
-    private final Map<String, Category> store = new HashMap<>();
-    private final Map<String, String> nameIndex = new HashMap<>();
+    private final Map<String, Category> store = new HashMap<>();    // categoryId, category
+    private final Map<String, String> nameIndex = new HashMap<>();  // categoryName, categoryId
 
     @Override
     public Category save(Category category) {

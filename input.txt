@@ -162,6 +162,15 @@ ORD-1
 
 7
 
+# delivery agent show his profile
+1
+agent1@test.com
+1234
+
+1
+
+4
+
 # ── STEP 12: Admin Final Verification ────────────────────────
 1
 admin@food.com

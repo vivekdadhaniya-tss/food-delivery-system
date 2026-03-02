@@ -57,7 +57,7 @@ public class DeliveryServiceImpl implements DeliveryService {
             userRepository.save(agent);
         }
 
-        // 2. MAJOR FIX: Instantly check if there are pending orders waiting for an agent!
+        // 2. Instantly check if there are pending orders waiting for an agent!
         autoAssignPendingOrders();
     }
 
@@ -69,7 +69,7 @@ public class DeliveryServiceImpl implements DeliveryService {
         userRepository.save(agent);
     }
 
-    // --- The Queue Logic ---
+    // the queue logic
     private void autoAssignPendingOrders() {
         // Find all PAID orders that don't have an agent yet, sorted by oldest first
         List<Order> pendingOrders = orderService.getOngoingOrders().stream()

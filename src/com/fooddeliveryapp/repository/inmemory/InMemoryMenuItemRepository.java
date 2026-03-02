@@ -10,8 +10,8 @@ import java.util.stream.Collectors;
 
 public class InMemoryMenuItemRepository implements MenuItemRepository {
 
-    private final Map<String, MenuItem> store = new HashMap<>();
-    private final Map<String, String> nameIndex = new HashMap<>();  // store active record
+    private final Map<String, MenuItem> store = new HashMap<>();    // menuItemId, menuItem
+    private final Map<String, String> nameIndex = new HashMap<>();  // menuItemName, menuItemId -> store active record
     private final CategoryRepository categoryRepository;
 
     public InMemoryMenuItemRepository(CategoryRepository categoryRepository) {

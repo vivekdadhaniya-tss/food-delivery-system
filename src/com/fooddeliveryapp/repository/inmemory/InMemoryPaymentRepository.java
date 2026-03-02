@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 
 public class InMemoryPaymentRepository implements PaymentRepository {
 
-    private final Map<String, Payment> paymentStore = new HashMap<>();
+    private final Map<String, Payment> paymentStore = new HashMap<>();  // paymentId, payment
     private final Map<String, List<String>> orderIndex = new HashMap<>(); // orderId -> list of paymentIds
 
     @Override

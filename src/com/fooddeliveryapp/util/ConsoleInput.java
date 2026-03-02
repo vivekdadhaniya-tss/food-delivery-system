@@ -47,7 +47,7 @@ public final class ConsoleInput {
             System.out.print(prompt);
             String line = readNextLine();
             if (!line.isEmpty()) {
-                return line; // Fixes the "Double Enter" bug by ignoring empty lines
+                return line; // buffer bug solve
             }
         }
     }

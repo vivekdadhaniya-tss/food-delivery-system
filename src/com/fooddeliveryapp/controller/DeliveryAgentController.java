@@ -54,9 +54,9 @@ public class DeliveryAgentController {
 
     private void viewProfile(DeliveryAgent agent) {
         System.out.println("\n--- Profile ---");
-        System.out.println("Name: " + agent.getName());
-        System.out.println("Status: " + (agent.isAvailable() ? "🟢 Available" : "🔴 Busy"));
-        System.out.println("Rating: ⭐ " + String.format("%.1f", agent.getRating()));
+        System.out.println("Name            : " + agent.getName());
+        System.out.println("Status          : " + (agent.isAvailable() ? "🟢 Available" : "🔴 Busy"));
+        System.out.println("Rating          : ⭐ " + String.format("%.1f", agent.getRating()));
         System.out.println("Total Deliveries: " + agent.getTotalDeliveries());
         // Assuming agent gets the delivery fee as earnings
         double earnings = agent.getTotalDeliveries() * com.fooddeliveryapp.config.SystemConfig.getInstance().getDeliveryFee();
@@ -72,7 +72,7 @@ public class DeliveryAgentController {
 
     private void updateOrderStatus(DeliveryAgent agent) {
         String orderId = ConsoleInput.getString("Enter Order No: ");
-        System.out.println("1. Mark Out for Delivery \n 2. Mark Delivered");
+        System.out.println("1. Mark Out for Delivery \n2. Mark Delivered");
         int choice = ConsoleInput.getInt("Choose: ");
 
         if (choice == 1) {
