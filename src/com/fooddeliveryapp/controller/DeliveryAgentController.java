@@ -25,7 +25,7 @@ public class DeliveryAgentController {
         DeliveryAgent agent = (DeliveryAgent) user;
         while (true) {
             System.out.println("\n=======================================");
-            System.out.println("     🛵 DELIVERY AGENT DASHBOARD 🛵    ");
+            System.out.println("       DELIVERY AGENT DASHBOARD      ");
             System.out.println("=======================================");
             System.out.println("1. View Profile & Earnings");
             System.out.println("2. View Assigned Orders");
@@ -44,10 +44,10 @@ public class DeliveryAgentController {
                         System.out.println("Logging out...");
                         return;
                     }
-                    default -> System.out.println("❌ Invalid choice.");
+                    default -> System.out.println("Invalid choice.");
                 }
             } catch (FoodDeliveryException | IllegalArgumentException e) {
-                System.out.println("❌ Error: " + e.getMessage());
+                System.out.println("Error: " + e.getMessage());
             }
         }
     }
@@ -55,8 +55,8 @@ public class DeliveryAgentController {
     private void viewProfile(DeliveryAgent agent) {
         System.out.println("\n--- Profile ---");
         System.out.println("Name            : " + agent.getName());
-        System.out.println("Status          : " + (agent.isAvailable() ? "🟢 Available" : "🔴 Busy"));
-        System.out.println("Rating          : ⭐ " + String.format("%.1f", agent.getRating()));
+        System.out.println("Status          : " + (agent.isAvailable() ? "Available" : "Busy"));
+        System.out.println("Rating          : " + String.format("%.1f", agent.getRating()));
         System.out.println("Total Deliveries: " + agent.getTotalDeliveries());
         // Assuming agent gets the delivery fee as earnings
         double earnings = agent.getTotalDeliveries() * com.fooddeliveryapp.config.SystemConfig.getInstance().getDeliveryFee();
@@ -77,10 +77,10 @@ public class DeliveryAgentController {
 
         if (choice == 1) {
             deliveryService.markOrderOutForDelivery(orderId);
-            System.out.println("✅ Order is out for delivery!");
+            System.out.println("Order is out for delivery!");
         } else if (choice == 2) {
             deliveryService.markOrderDelivered(orderId);
-            System.out.println("✅ Order delivered successfully! You are now available for new orders.");
+            System.out.println("Order delivered successfully! You are now available for new orders.");
         }
     }
 }

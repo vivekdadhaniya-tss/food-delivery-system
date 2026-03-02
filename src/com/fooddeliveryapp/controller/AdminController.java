@@ -31,18 +31,14 @@ public class AdminController {
     public void start(User admin) {
         while (true) {
             System.out.println("\n=======================================");
-            System.out.println("        🛡️ ADMIN DASHBOARD 🛡️        ");
+            System.out.println("           ADMIN DASHBOARD           ");
             System.out.println("=======================================");
-            System.out.println("--- 🍔 Menu Management ---");
             System.out.println("1. Manage Categories");
             System.out.println("2. Manage Menu Items");
-            System.out.println("--- 👥 Users & Agents ---");
             System.out.println("3. View All Customers");
             System.out.println("4. View Delivery Agents");
-            System.out.println("--- 📦 Orders & Finance ---");
             System.out.println("5. View All Orders");
             System.out.println("6. View Financial Overview");
-            System.out.println("--- ⚙️ System Settings ---");
             System.out.println("7. Configure Discount Strategy");
             System.out.println("8. Configure Delivery Fee & Tax");
             System.out.println("9. Logout");
@@ -64,10 +60,10 @@ public class AdminController {
                         System.out.println("Logging out...");
                         return;
                     }
-                    default -> System.out.println("❌ Invalid choice.");
+                    default -> System.out.println("Invalid choice.");
                 }
             } catch (FoodDeliveryException | IllegalArgumentException e) {
-                System.out.println("❌ Error: " + e.getMessage());
+                System.out.println("Error: " + e.getMessage());
             }
         }
     }
@@ -78,7 +74,7 @@ public class AdminController {
         if (choice == 1) {
             String name = ConsoleInput.getString("Category Name: ");
             Category c = menuService.addCategory(name);
-            System.out.println("✅ Category added with ID: " + c.getId());
+            System.out.println("Category added with ID: " + c.getId());
         } else if (choice == 2) {
             List<String[]> rows = menuService.getAllCategories().stream()
                     .map(c -> new String[]{c.getId(), c.getName(), c.isActive() ? "Active" : "Inactive"})
@@ -88,7 +84,7 @@ public class AdminController {
             String id = ConsoleInput.getString("Category ID: ");
             boolean activate = ConsoleInput.getInt("1 to Activate, 0 to Deactivate: ") == 1;
             menuService.toggleCategoryStatus(id, activate);
-            System.out.println("✅ Status updated.");
+            System.out.println("Status updated.");
         }
     }
 
@@ -100,7 +96,7 @@ public class AdminController {
             String name = ConsoleInput.getString("Item Name: ");
             double price = ConsoleInput.getDouble("Price: ");
             MenuItem item = menuService.addMenuItem(name, price, catId);
-            System.out.println("✅ Item added with ID: " + item.getId());
+            System.out.println("Item added with ID: " + item.getId());
         } else if (choice == 2) {
             List<String[]> rows = menuService.getAllMenuItems().stream()
                     .map(m -> new String[]{m.getId(), m.getName(), m.getCategoryId(), FormatUtil.formatCurrency(m.getPrice()), m.isAvailable() ? "Yes" : "No"})
@@ -110,7 +106,7 @@ public class AdminController {
             String id = ConsoleInput.getString("Item ID: ");
             boolean available = ConsoleInput.getInt("1 to make Available, 0 to make Unavailable: ") == 1;
             menuService.toggleMenuItemAvailability(id, available);
-            System.out.println("✅ Availability updated.");
+            System.out.println("Availability updated.");
         }
     }
 
@@ -136,7 +132,7 @@ public class AdminController {
     }
 
     private void viewFinance() {
-        System.out.println("\n💰 Total Revenue: " + FormatUtil.formatCurrency(paymentService.calculateTotalRevenue()));
+        System.out.println("\nTotal Revenue: " + FormatUtil.formatCurrency(paymentService.calculateTotalRevenue()));
         List<String[]> rows = paymentService.getAllPayments().stream()
                 .map(p -> new String[]{p.getPaymentId(), p.getOrderId(), p.getMode().name(), p.getStatus().name(), FormatUtil.formatCurrency(p.getAmount())})
                 .collect(Collectors.toList());
@@ -159,13 +155,13 @@ public class AdminController {
             double percent = ConsoleInput.getDouble("Discount Percentage (e.g., 10 for 10%): ");
             config.setDiscountStrategy(new PercentageDiscount(threshold, percent));
         }
-        System.out.println("✅ Discount Strategy Updated.");
+        System.out.println("Discount Strategy Updated.");
     }
 
     private void configureFees() {
         SystemConfig config = SystemConfig.getInstance();
         config.setDeliveryFee(ConsoleInput.getDouble("Enter new Delivery Fee: "));
         config.setTaxRate(ConsoleInput.getDouble("Enter new Tax Rate (%): "));
-        System.out.println("✅ Fees Updated.");
+        System.out.println("Fees Updated.");
     }
 }

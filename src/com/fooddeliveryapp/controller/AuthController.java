@@ -14,14 +14,14 @@ public class AuthController {
     }
 
     public User login() {
-        System.out.println("\n--- 🔐 LOGIN ---");
+        System.out.println("\n--- LOGIN ---");
         String email = ConsoleInput.getString("Email     : ");
         String password = ConsoleInput.getString("Password  : ");
         return authService.login(email, password);
     }
 
     public void registerCustomer() {
-        System.out.println("\n--- 📝 REGISTER CUSTOMER ---");
+        System.out.println("\n--- REGISTER CUSTOMER ---");
         try {
             String name = InputUtil.requireNonBlank(ConsoleInput.getString("Name                  : "), "Name");
             String phone = InputUtil.validatePhone(ConsoleInput.getString("Phone (10 digits)     : "));
@@ -30,14 +30,14 @@ public class AuthController {
             String address = InputUtil.requireNonBlank(ConsoleInput.getString("Address               : "), "Address");
 
             authService.registerCustomer(name, phone, email, password, address);
-            System.out.println("✅ Customer registered successfully!");
+            System.out.println("Customer registered successfully!");
         } catch (IllegalArgumentException | FoodDeliveryException e) {
-            System.out.println("❌ Registration Failed: " + e.getMessage());
+            System.out.println("Registration Failed: " + e.getMessage());
         }
     }
 
     public void registerDeliveryAgent() {
-        System.out.println("\n--- 🛵 REGISTER DELIVERY AGENT ---");
+        System.out.println("\n--- REGISTER DELIVERY AGENT ---");
         try {
             String name = InputUtil.requireNonBlank(ConsoleInput.getString("Name                  : "), "Name");
             String phone = InputUtil.validatePhone(ConsoleInput.getString("Phone (10 digits)     : "));
@@ -45,9 +45,9 @@ public class AuthController {
             String password = InputUtil.validatePassword(ConsoleInput.getString("Password (min 4 chars): "));
 
             authService.registerDeliveryAgent(name, phone, email, password);
-            System.out.println("✅ Delivery Agent registered successfully!");
+            System.out.println("Delivery Agent registered successfully!");
         } catch (IllegalArgumentException | FoodDeliveryException e) {
-            System.out.println("❌ Registration Failed: " + e.getMessage());
+            System.out.println("Registration Failed: " + e.getMessage());
         }
     }
 }

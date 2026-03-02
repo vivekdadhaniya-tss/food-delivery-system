@@ -44,7 +44,7 @@ public class Application {
         // 5. Main Application Loop
         while (true) {
             System.out.println("\n=======================================");
-            System.out.println("      🍔 WELCOME TO FOOD APP 🍔      ");
+            System.out.println("        WELCOME TO FOOD APP        ");
             System.out.println("=======================================");
             System.out.println("1. Login");
             System.out.println("2. Register as Customer");
@@ -58,7 +58,7 @@ public class Application {
                 switch (choice) {
                     case 1 -> {
                         User user = authController.login();
-                        System.out.println("✅ Login Successful! Welcome, " + user.getName());
+                        System.out.println("Login Successful! Welcome, " + user.getName());
 
                         // Route to the correct dashboard based on Role
                         if      (user.getRole() == Role.ADMIN)          adminController.start(user);
@@ -68,15 +68,15 @@ public class Application {
                     case 2 -> authController.registerCustomer();
                     case 3 -> authController.registerDeliveryAgent();
                     case 4 -> {
-                        System.out.println("Goodbye! Have a great day! 👋");
+                        System.out.println("Goodbye! Have a great day!");
                         System.exit(0);
                     }
-                    default -> System.out.println("❌ Invalid choice. Please try again.");
+                    default -> System.out.println("Invalid choice. Please try again.");
                 }
             } catch (FoodDeliveryException e) {
-                System.out.println("❌ Error: " + e.getMessage());
+                System.out.println("Error: " + e.getMessage());
             } catch (Exception e) {
-                System.out.println("❌ System Error: Something went wrong!");
+                System.out.println("System Error: Something went wrong!");
             }
         }
     }

@@ -38,7 +38,7 @@ public class SystemConfig {
                         AppConstants.DEFAULT_ADMIN_EMAIL,
                         AppConstants.DEFAULT_ADMIN_PASSWORD
                 );
-                System.out.println("⚙️ System Boot: Default Admin account initialized from System.");
+                System.out.println("System Boot: Default Admin account initialized from System.");
             } else {
                 System.out.println("Default admin already exists, skipping creation.");
             }

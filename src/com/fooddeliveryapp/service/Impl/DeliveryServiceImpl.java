@@ -84,7 +84,7 @@ public class DeliveryServiceImpl implements DeliveryService {
                 agent.markBusy();
                 userRepository.save(agent);
                 orderService.assignDeliveryAgent(order.getOrderNumber(), agent.getId());
-                System.out.println("🔄 [SYSTEM] Auto-assigned pending order " + order.getOrderNumber() + " to Agent " + agent.getName());
+                System.out.println("[SYSTEM] Auto-assigned pending order " + order.getOrderNumber() + " to Agent " + agent.getName());
             } else {
                 break; // No more agents available, stop trying
             }

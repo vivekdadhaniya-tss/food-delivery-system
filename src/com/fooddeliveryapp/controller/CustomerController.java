@@ -33,16 +33,16 @@ public class CustomerController {
 
         while (true) {
             System.out.println("\n=======================================");
-            System.out.println("      🍽️ CUSTOMER DASHBOARD 🍽️      ");
+            System.out.println("       ️ CUSTOMER DASHBOARD  ️      ");
             System.out.println("=======================================");
-            System.out.println("👤 Welcome, " + customer.getName());
-            System.out.println("1. 📜 Browse Menu");
-            System.out.println("2. 🛒 Manage Cart (" + cartService.getTotalItems(customer.getId()) + " items)");
-            System.out.println("3. 💳 Checkout & Place Order");
-            System.out.println("4. 📍 Track Ongoing Orders");
-            System.out.println("5. 🧾 View Order History & Invoices");
-            System.out.println("6. ⭐ Rate Delivery Agent");
-            System.out.println("7. 🚪 Logout");
+            System.out.println("Welcome, " + customer.getName());
+            System.out.println("1. Browse Menu");
+            System.out.println("2. Manage Cart (" + cartService.getTotalItems(customer.getId()) + " items)");
+            System.out.println("3. Checkout & Place Order");
+            System.out.println("4. Track Ongoing Orders");
+            System.out.println("5. View Order History & Invoices");
+            System.out.println("6. Rate Delivery Agent");
+            System.out.println("7. Logout");
             System.out.println("=======================================");
 
             int choice = ConsoleInput.getInt("Select an option: ");
@@ -59,10 +59,10 @@ public class CustomerController {
                         System.out.println("Logging out...");
                         return;
                     }
-                    default -> System.out.println("❌ Invalid choice.");
+                    default -> System.out.println("Invalid choice.");
                 }
             } catch (FoodDeliveryException | IllegalArgumentException e) {
-                System.out.println("❌ Error: " + e.getMessage());
+                System.out.println("Error: " + e.getMessage());
             }
         }
     }
@@ -73,7 +73,7 @@ public class CustomerController {
                 .toList();
 
         if (items.isEmpty()) {
-            System.out.println("\n📭 The menu is currently empty. Please check back later!");
+            System.out.println("\nThe menu is currently empty. Please check back later!");
             return;
         }
 
@@ -88,7 +88,7 @@ public class CustomerController {
             int qty = ConsoleInput.getInt("Enter Quantity: ");
 
             cartService.addItem(customer.getId(), itemId, qty);
-            System.out.println("✅ Item added to cart!");
+            System.out.println("Item added to cart!");
         }
     }
 
@@ -96,7 +96,7 @@ public class CustomerController {
         Cart cart = cartService.getCart(customer.getId());
 
         if (cart.isEmpty()) {
-            System.out.println("\n🛒 Your cart is empty.");
+            System.out.println("\nYour cart is empty.");
             return;
         }
 
@@ -113,16 +113,16 @@ public class CustomerController {
         if (choice == 1) {
             String itemId = ConsoleInput.getString("Enter Item ID to remove: ");
             cartService.removeItem(customer.getId(), itemId);
-            System.out.println("✅ Item removed.");
+            System.out.println("Item removed.");
         } else if (choice == 2) {
             cartService.clearCart(customer.getId());
-            System.out.println("✅ Cart cleared.");
+            System.out.println("Cart cleared.");
         }
     }
 
     private void checkout(Customer customer) {
         if (cartService.getCart(customer.getId()).isEmpty()) {
-            System.out.println("\n❌ Cart is empty. Add items before checking out.");
+            System.out.println("\nCart is empty. Add items before checking out.");
             return;
         }
 
@@ -137,9 +137,9 @@ public class CustomerController {
 
         // Try to assign an agent. If none available, it stays in the queue.
         if (deliveryService.assignAgentToOrder(order.getOrderNumber()).isEmpty()) {
-            System.out.println("⏳ Order Placed! Waiting for an available delivery agent...");
+            System.out.println("Order Placed! Waiting for an available delivery agent...");
         } else {
-            System.out.println("✅ Order Placed Successfully! Agent assigned.");
+            System.out.println("Order Placed Successfully! Agent assigned.");
         }
         System.out.println("Order No: " + order.getOrderNumber());
     }
@@ -150,12 +150,12 @@ public class CustomerController {
                 .map(o -> new String[]{
                         o.getOrderNumber(),
                         o.getStatus().name(),
-                        o.getDeliveryAgentId() != null ? o.getDeliveryAgentId() : "⏳ In Queue..."
+                        o.getDeliveryAgentId() != null ? o.getDeliveryAgentId() : "In Queue..."
                 })
                 .toList();
 
         if (rows.isEmpty()) {
-            System.out.println("\n📭 You have no ongoing orders.");
+            System.out.println("\nYou have no ongoing orders.");
             return;
         }
 
@@ -168,7 +168,7 @@ public class CustomerController {
                 .toList();
 
         if (rows.isEmpty()) {
-            System.out.println("\n📭 No order history found.");
+            System.out.println("\nNo order history found.");
             return;
         }
 
@@ -188,6 +188,6 @@ public class CustomerController {
         double rating = ConsoleInput.getDouble("Enter Rating (1.0 to 5.0): ");
 
         deliveryService.rateDeliveryAgent(agentId, rating);
-        System.out.println("✅ Thank you for your feedback!");
+        System.out.println("Thank you for your feedback!");
     }
 }
