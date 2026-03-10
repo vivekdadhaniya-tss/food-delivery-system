@@ -12,34 +12,16 @@ import com.fooddeliveryapp.service.Impl.*;
 import com.fooddeliveryapp.util.ConsoleInput;
 
 public class Application {
+
+    // Controllers
+    private static AuthController authController;
+    private static AdminController adminController;
+    private static CustomerController customerController;
+    private static DeliveryAgentController agentController;
+
     public static void main(String[] args) {
 
-        // 1. Initialize Repositories
-        UserRepository              userRepo    = new InMemoryUserRepository();
-        DeliveryAgentRepository     agentRepo   = new InMemoryDeliveryAgentRepository(userRepo);
-        CategoryRepository          categoryRepo = new InMemoryCategoryRepository();
-        MenuItemRepository          menuRepo    = new InMemoryMenuItemRepository(categoryRepo);
-        OrderRepository             orderRepo   = new InMemoryOrderRepository();
-        PaymentRepository           paymentRepo = new InMemoryPaymentRepository();
-
-        // 2. Initialize Services
-        AuthService     authService     = new AuthServiceImpl(userRepo);
-        UserService     userService     = new UserServiceImpl(userRepo, agentRepo);
-        MenuService     menuService     = new MenuServiceImpl(categoryRepo, menuRepo);
-        CartService     cartService     = new CartServiceImpl(userRepo, menuRepo);
-        PaymentService  paymentService  = new PaymentServiceImpl(paymentRepo);
-        OrderService    orderService    = new OrderServiceImpl(orderRepo, cartService, paymentService);
-        DeliveryService deliveryService = new DeliveryServiceImpl(agentRepo, userRepo, orderService);
-
-        // 3. Initialize Controllers
-        AuthController          authController      = new AuthController(authService);
-        AdminController         adminController     = new AdminController(menuService, userService, orderService, paymentService);
-        CustomerController      customerController  = new CustomerController(menuService, cartService, orderService, paymentService, deliveryService);
-        DeliveryAgentController agentController     = new DeliveryAgentController(orderService, deliveryService);
-
-
-        // 4. Seed Default System Data directly via SystemConfig
-        SystemConfig.getInstance().initializeSystemDefaults(authService);
+        initializeDependencies();
 
         // 5. Main Application Loop
         while (true) {
@@ -79,5 +61,34 @@ public class Application {
                 System.out.println("System Error: Something went wrong!");
             }
         }
+    }
+
+    public static void initializeDependencies() {
+        // 1. Initialize Repositories
+        UserRepository              userRepo    = new InMemoryUserRepository();
+        DeliveryAgentRepository     agentRepo   = new InMemoryDeliveryAgentRepository(userRepo);
+        CategoryRepository          categoryRepo = new InMemoryCategoryRepository();
+        MenuItemRepository          menuRepo    = new InMemoryMenuItemRepository(categoryRepo);
+        OrderRepository             orderRepo   = new InMemoryOrderRepository();
+        PaymentRepository           paymentRepo = new InMemoryPaymentRepository();
+
+        // 2. Initialize Services
+        AuthService     authService     = new AuthServiceImpl(userRepo);
+        UserService     userService     = new UserServiceImpl(userRepo, agentRepo);
+        MenuService     menuService     = new MenuServiceImpl(categoryRepo, menuRepo);
+        CartService     cartService     = new CartServiceImpl(userRepo, menuRepo);
+        PaymentService  paymentService  = new PaymentServiceImpl(paymentRepo);
+        OrderService    orderService    = new OrderServiceImpl(orderRepo, cartService, paymentService);
+        DeliveryService deliveryService = new DeliveryServiceImpl(agentRepo, userRepo, orderService);
+
+        // 3. Initialize Controllers
+        authController      = new AuthController(authService);
+        adminController     = new AdminController(menuService, userService, orderService, paymentService);
+        customerController  = new CustomerController(menuService, cartService, orderService, paymentService, deliveryService);
+        agentController     = new DeliveryAgentController(orderService, deliveryService);
+
+
+        // 4. Seed Default System Data directly via SystemConfig
+        SystemConfig.getInstance().initializeSystemDefaults(authService);
     }
 }
